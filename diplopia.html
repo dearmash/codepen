@@ -231,24 +231,31 @@
 
             // Create a mutable copy of the full deck
             let currentDeck = [...fullMnemonicaOrder];
+            const N = currentDeck.length; // Total cards in the full deck (52)
 
             // Randomize the starting point of the deck (rotate the array)
-            const startOffset = Math.floor(Math.random() * currentDeck.length);
+            const startOffset = Math.floor(Math.random() * N);
             currentDeck = currentDeck.slice(startOffset).concat(currentDeck.slice(0, startOffset));
 
             // --- Step 1: Randomly select and move one card ---
-            // Ensure there are cards to move (should always be 52 initially)
             if (currentDeck.length > 0) {
-                const moveFromIndex = Math.floor(Math.random() * currentDeck.length);
-                movedCard = currentDeck.splice(moveFromIndex, 1)[0]; // Remove the card to be moved
-                originalMovedCardIndex = moveFromIndex; // Store its original index
+                originalMovedCardIndex = Math.floor(Math.random() * N); // Index in the 52-card deck (0-51)
+                movedCard = currentDeck.splice(originalMovedCardIndex, 1)[0]; // Remove the card. currentDeck is now 51 elements.
 
-                // Generate a new random index to insert the moved card
-                // Ensure the new index is within the bounds of the now 51-card deck
-                const insertIndex = Math.floor(Math.random() * (currentDeck.length + 1)); // +1 to allow insertion at the end
-                newMovedCardIndex = insertIndex; // Store its new index
+                // Create a list of all possible insertion indices (0 to 51 for the 51-card array)
+                const possibleInsertIndices = Array.from({length: N}, (_, i) => i); // [0, 1, ..., 51]
+                
+                // Remove the original index from the list of possible insertion indices.
+                // If originalMovedCardIndex was 5, then index 5 in the *original* 52-card array is now gone.
+                // In the 51-card array, the elements that were at index 6, 7, ... are now at 5, 6, ...
+                // So, the 'hole' is conceptually at originalMovedCardIndex.
+                possibleInsertIndices.splice(originalMovedCardIndex, 1); // This removes the index that corresponds to the original spot.
 
-                currentDeck.splice(insertIndex, 0, movedCard); // Insert the card at the new position
+                // Now, pick a random index from the remaining 51 possible insertion indices.
+                const randomInsertIndexInModifiedArray = Math.floor(Math.random() * possibleInsertIndices.length);
+                newMovedCardIndex = possibleInsertIndices[randomInsertIndexInModifiedArray];
+
+                currentDeck.splice(newMovedCardIndex, 0, movedCard); // Insert the card at the new position
                 
                 console.log("Moved card:", movedCard, "from Position", originalMovedCardIndex + 1, "to Position", newMovedCardIndex + 1);
             }
