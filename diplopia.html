@@ -242,20 +242,34 @@
                 originalMovedCardIndex = Math.floor(Math.random() * N); // Index in the 52-card deck (0-51)
                 movedCard = currentDeck.splice(originalMovedCardIndex, 1)[0]; // Remove the card. currentDeck is now 51 elements.
 
-                // Create a list of all possible insertion indices (0 to 51 for the 51-card array)
-                const possibleInsertIndices = Array.from({length: N}, (_, i) => i); // [0, 1, ..., 51]
+                const validInsertIndices = [];
+                for (let i = 0; i < N; i++) { // Iterate through all 52 conceptual positions
+                    // Calculate distance with wrap-around
+                    const distance = Math.min(
+                        Math.abs(i - originalMovedCardIndex),
+                        N - Math.abs(i - originalMovedCardIndex)
+                    );
+                    if (distance >= 5) {
+                        validInsertIndices.push(i);
+                    }
+                }
+
+                // If for some reason there are no valid indices (e.g., N < 5), fallback to any different spot
+                if (validInsertIndices.length === 0) {
+                    let fallbackInsertIndex;
+                    do {
+                        fallbackInsertIndex = Math.floor(Math.random() * (currentDeck.length + 1));
+                    } while (fallbackInsertIndex === originalMovedCardIndex);
+                    newMovedCardIndex = fallbackInsertIndex;
+                } else {
+                    const randomValidIndexInConceptualSpace = Math.floor(Math.random() * validInsertIndices.length);
+                    newMovedCardIndex = validInsertIndices[randomValidIndexInConceptualSpace];
+                }
+
+                // Adjust the insertion index for the 51-element array
+                const actualInsertIndex = newMovedCardIndex > originalMovedCardIndex ? newMovedCardIndex - 1 : newMovedCardIndex;
                 
-                // Remove the original index from the list of possible insertion indices.
-                // If originalMovedCardIndex was 5, then index 5 in the *original* 52-card array is now gone.
-                // In the 51-card array, the elements that were at index 6, 7, ... are now at 5, 6, ...
-                // So, the 'hole' is conceptually at originalMovedCardIndex.
-                possibleInsertIndices.splice(originalMovedCardIndex, 1); // This removes the index that corresponds to the original spot.
-
-                // Now, pick a random index from the remaining 51 possible insertion indices.
-                const randomInsertIndexInModifiedArray = Math.floor(Math.random() * possibleInsertIndices.length);
-                newMovedCardIndex = possibleInsertIndices[randomInsertIndexInModifiedArray];
-
-                currentDeck.splice(newMovedCardIndex, 0, movedCard); // Insert the card at the new position
+                currentDeck.splice(actualInsertIndex, 0, movedCard); // Insert the card at the new position
                 
                 console.log("Moved card:", movedCard, "from Position", originalMovedCardIndex + 1, "to Position", newMovedCardIndex + 1);
             }
