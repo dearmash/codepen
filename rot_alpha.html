@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alphabet Pattern</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for a clean look */
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f0f4f8; /* Light background */
+            display: flex;
+            flex-direction: column; /* Arrange content vertically */
+            align-items: center;
+            min-height: 100vh; /* Full viewport height */
+            padding: 2rem; /* Overall padding */
+        }
+
+        /* Main container for the whole application */
+        .app-container {
+            max-width: 1200px;
+            width: 100%;
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Title styling */
+        .main-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1a202c; /* Dark text color */
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        /* Tab navigation styling */
+        .tab-nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e2e8f0; /* Underline for tabs */
+        }
+
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #64748b; /* Default tab text color */
+            background-color: transparent;
+            border: none;
+            border-bottom: 3px solid transparent; /* Highlight for active tab */
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            outline: none; /* Remove outline on focus */
+        }
+
+        .tab-button:hover {
+            color: #334155;
+            border-color: #cbd5e1;
+        }
+
+        .tab-button.active {
+            color: #000000; /* Active tab text color */
+            border-color: #000000; /* Active tab underline color */
+        }
+
+        /* Tab content styling */
+        .tab-content {
+            padding: 1rem 0;
+        }
+
+        /* Styling for the main grid container */
+        .image-grid {
+            display: grid;
+            /* Defines 5 columns: auto for the alphabet column, then 4 fluid columns for images */
+            grid-template-columns: auto repeat(4, minmax(0, 1fr));
+            gap: 1rem; /* Gap between grid items */
+            width: 100%; /* Full width within max-width */
+            /* No background or padding here, as it's handled by app-container */
+        }
+
+        /* Styling for each grid item (image cells) */
+        .grid-item {
+            aspect-ratio: 1 / 1; /* Keep items square, dictating row height */
+            background-color: #e2e8f0; /* Light grey background for each item */
+            border-radius: 0.75rem; /* Rounded corners for items */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Hide overflow if SVG goes beyond */
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); /* Inner shadow for depth */
+        }
+
+        /* Styling for the new alphabet column items */
+        .alphabet-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem; /* Larger font for letters */
+            font-weight: bold;
+            color: #475569; /* Darker text color */
+            background-color: #f8fafc; /* Very light background for alphabet cells */
+            border-radius: 0.75rem;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.03); /* Lighter inner shadow */
+            padding: 0.5rem; /* Some padding */
+            /* Height will be determined by the grid-item's aspect-ratio in the same row */
+        }
+
+        /* SVG styling */
+        .grid-item svg {
+            width: 100%;
+            height: 100%;
+            display: block; /* Remove extra space below SVG */
+        }
+
+        /* Line styling within SVG */
+        .grid-item svg line {
+            stroke: #000000; /* Black stroke for the line */
+            stroke-width: 2; /* Thicker stroke for visibility */
+            transition: all 0.3s ease-in-out; /* Smooth transitions */
+        }
+
+        /* Circle styling within SVG - stroke is now handled dynamically in JS */
+        .grid-item svg circle {
+            stroke-width: 2; /* Thicker stroke for visibility */
+            transition: all 0.3s ease-in-out; /* Smooth transitions */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .image-grid {
+                /* Alphabet column + 2 image columns on medium screens */
+                grid-template-columns: auto repeat(2, minmax(0, 1fr));
+                gap: 0.75rem;
+            }
+            .app-container {
+                padding: 1.5rem;
+            }
+            .main-title {
+                font-size: 2rem;
+                margin-bottom: 1.5rem;
+            }
+            .tab-button {
+                font-size: 1rem;
+                padding: 0.6rem 1rem;
+            }
+            .alphabet-item {
+                font-size: 1.3rem; /* Adjust font size for medium screens */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .image-grid {
+                /* Alphabet column + 1 image column on small screens */
+                grid-template-columns: auto repeat(1, minmax(0, 1fr));
+                gap: 0.5rem;
+            }
+            .app-container {
+                padding: 1rem;
+            }
+            .main-title {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+            .tab-button {
+                font-size: 0.9rem;
+                padding: 0.5rem 0.8rem;
+            }
+            .alphabet-item {
+                font-size: 1rem; /* Further adjust font size for small screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <h1 class="main-title">Alphabet Pattern</h1>
+
+        <div class="tab-nav">
+            <button class="tab-button active" onclick="showTab('all')">All</button>
+            <button class="tab-button" onclick="showTab('easyTest')">Easy Test</button>
+            <button class="tab-button" onclick="showTab('hardTest')">Hard Test</button>
+        </div>
+
+        <div id="allTabContent" class="tab-content">
+            <div id="imageGrid" class="image-grid">
+                <!-- Images will be generated here by JavaScript -->
+            </div>
+        </div>
+
+        <div id="easyTestTabContent" class="tab-content hidden">
+            <div class="flex flex-col items-center space-y-6 p-4">
+                <div id="easyTestPatternDisplay" class="grid-item w-64 h-64 border-2 border-gray-300 rounded-lg shadow-md">
+                    <!-- Random SVG will be displayed here -->
+                </div>
+                <div id="easyTestAnswer" class="text-3xl font-bold text-gray-800 hidden">
+                    <!-- Answer letter will be displayed here -->
+                </div>
+                <div class="flex space-x-4">
+                    <button class="tab-button bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow-md" onclick="showEasyAnswer()">Show Answer</button>
+                    <button class="tab-button bg-green-500 hover:bg-green-600 text-white rounded-md shadow-md" onclick="resetEasyTest()">New Pattern</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="hardTestTabContent" class="tab-content hidden">
+            <div class="flex flex-col items-center space-y-6 p-4">
+                <div id="hardTestPatternDisplay" class="grid-item w-64 h-64 border-2 border-gray-300 rounded-lg shadow-md">
+                    <!-- Random SVG will be displayed here -->
+                </div>
+                <div id="hardTestAnswer" class="text-3xl font-bold text-gray-800 hidden">
+                    <!-- Answer letter will be displayed here -->
+                </div>
+                <div class="flex space-x-4">
+                    <button class="tab-button bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow-md" onclick="showHardAnswer()">Show Answer</button>
+                    <button class="tab-button bg-green-500 hover:bg-green-600 text-white rounded-md shadow-md" onclick="resetHardTest()">New Pattern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Array to store the canonical (unreflected, unrotated) patterns for each row
+        // Each object will contain { letter: 'A', fillCircles: [0, 1] }
+        let allCanonicalPatterns = [];
+
+        // Function to generate a single SVG image based on the template
+        function generateSVGTemplate(options = {}) {
+            const {
+                reflectX = false,
+                reflectY = false,
+                fillCircles = []
+            } = options;
+
+            const viewBoxSize = 100;
+            const circleRadius = 10;
+            const circleGap = 33.33; // Distance between circle centers in a 3x3 grid
+
+            let svgContent = `<svg viewBox="0 0 ${viewBoxSize} ${viewBoxSize}" xmlns="http://www.w3.org/2000/svg">`;
+
+            // Construct the transform string based on reflection options
+            let transform = '';
+            let translateX = 0;
+            let translateY = 0;
+            let scaleX = 1;
+            let scaleY = 1;
+
+            if (reflectX) {
+                translateX = viewBoxSize; // Translate to the right edge
+                scaleX = -1; // Flip horizontally
+            }
+            if (reflectY) {
+                translateY = viewBoxSize; // Translate to the bottom edge
+                scaleY = -1; // Flip vertically
+            }
+
+            // Combine translate and scale
+            if (translateX !== 0 || translateY !== 0 || scaleX !== 1 || scaleY !== 1) {
+                transform = `translate(${translateX}, ${translateY}) scale(${scaleX}, ${scaleY})`;
+            }
+            
+            svgContent += `<g transform="${transform}">`;
+
+            // Draw 9 circles in a 3x3 grid
+            for (let row = 0; row < 3; row++) {
+                for (let col = 0; col < 3; col++) {
+                    const cx = circleGap / 2 + col * circleGap;
+                    const cy = circleGap / 2 + row * circleGap;
+                    const circleIndex = row * 3 + col;
+
+                    // Determine fill color
+                    const fillColor = fillCircles.includes(circleIndex) ? '#000000' : 'none';
+                    // Determine stroke color based on whether the circle is filled
+                    const strokeColor = fillCircles.includes(circleIndex) ? '#000000' : '#94A3B8'; // Black if filled, lighter grey if not
+
+                    svgContent += `<circle cx="${cx}" cy="${cy}" r="${circleRadius}" fill="${fillColor}" stroke="${strokeColor}" />`;
+                }
+            }
+
+            // Calculate the end point of the line on the edge of the top-left circle
+            const topLeftCircleCx = circleGap / 2;
+            const topLeftCircleCy = circleGap / 2;
+
+            // Vector from (0,0) to the center of the top-left circle
+            const dx = topLeftCircleCx - 0;
+            const dy = topLeftCircleCy - 0;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            // Unit vector pointing from (0,0) to the circle center
+            const unitDx = dx / distance;
+            const unitDy = dy / distance;
+
+            // Point on the circle's edge closest to (0,0)
+            const lineEndX = topLeftCircleCx - circleRadius * unitDx;
+            const lineEndY = topLeftCircleCy - circleRadius * unitDy;
+
+            // Draw the line from (0,0) to the edge of the top-left circle
+            svgContent += `<line x1="0" y1="0" x2="${lineEndX}" y2="${lineEndY}" />`;
+
+            svgContent += `</g>`; // Close the group element
+            svgContent += `</svg>`;
+            return svgContent;
+        }
+
+        // Get the grid container for the "All" tab
+        const imageGridContainer = document.getElementById('imageGrid');
+
+        // Define grid dimensions
+        const numImageColumns = 4; // Number of image columns
+        const numRows = 26; // Number of rows (A-Z)
+
+        // Function to populate the allCanonicalPatterns array with data for each row
+        function populateAllCanonicalPatterns() {
+            allCanonicalPatterns = []; // Clear previous patterns if any
+            for (let row = 0; row < numRows; row++) {
+                const letter = String.fromCharCode('A'.charCodeAt(0) + row);
+                let circlesToFill = [];
+
+                // Logic for rows A-J (indices 0-9)
+                if (row >= 1 && row <= 9) {
+                    circlesToFill.push(row - 1);
+                }
+                // Logic for rows K-R (indices 10-17)
+                else if (row >= 10 && row <= 17) {
+                    circlesToFill.push(0);
+                    circlesToFill.push((row - 10) + 1);
+                }
+                // Logic for rows S-Y (indices 18-24)
+                else if (row >= 18 && row <= 24) {
+                    circlesToFill.push(1);
+                    circlesToFill.push((row - 18) + 2);
+                }
+                // Logic for the last row Z (index 25)
+                else if (row === 25) {
+                    circlesToFill.push(2);
+                    circlesToFill.push(3);
+                }
+
+                allCanonicalPatterns.push({
+                    letter: letter,
+                    fillCircles: circlesToFill
+                });
+            }
+        }
+
+        // Function to render the grid for the "All" tab
+        function renderAllTabGrid() {
+            imageGridContainer.innerHTML = ''; // Clear existing content before repopulating
+            for (let row = 0; row < numRows; row++) {
+                const patternData = allCanonicalPatterns[row];
+
+                // Add the alphabet letter for this row
+                const alphabetItem = document.createElement('div');
+                alphabetItem.classList.add('alphabet-item');
+                alphabetItem.textContent = patternData.letter;
+                imageGridContainer.appendChild(alphabetItem);
+
+                // Add the 4 image grid items for this row
+                for (let col = 0; col < numImageColumns; col++) {
+                    const gridItem = document.createElement('div');
+                    gridItem.classList.add('grid-item');
+
+                    // Determine reflection flags for each column
+                    const applyReflectX = (col === 1 || col === 3); // Columns 2 and 4 (0-indexed: 1 and 3)
+                    const applyReflectY = (col === 2 || col === 3); // Columns 3 and 4 (0-indexed: 2 and 3)
+
+                    // Generate SVG for each item, passing the calculated options
+                    const svg = generateSVGTemplate({
+                        reflectX: applyReflectX,
+                        reflectY: applyReflectY,
+                        fillCircles: patternData.fillCircles
+                    });
+                    gridItem.innerHTML = svg;
+                    imageGridContainer.appendChild(gridItem);
+                }
+            }
+        }
+
+        // Easy Test tab variables
+        let currentEasyTestPattern = null; // Stores the currently displayed pattern data { letter, fillCircles }
+
+        // Function to display a random canonical pattern in the Easy Test tab
+        function displayRandomEasyPattern() {
+            const easyTestPatternDisplay = document.getElementById('easyTestPatternDisplay');
+            const easyTestAnswer = document.getElementById('easyTestAnswer');
+
+            // Hide answer initially
+            easyTestAnswer.classList.add('hidden');
+
+            // Pick a random row index from the canonical patterns
+            const randomIndex = Math.floor(Math.random() * allCanonicalPatterns.length);
+            currentEasyTestPattern = allCanonicalPatterns[randomIndex];
+
+            // Generate the canonical (unrotated, unreflected) SVG for the test display
+            const svg = generateSVGTemplate({
+                reflectX: false, // Ensure no reflection for the easy test pattern
+                reflectY: false, // Ensure no reflection for the easy test pattern
+                fillCircles: currentEasyTestPattern.fillCircles
+            });
+            easyTestPatternDisplay.innerHTML = svg;
+        }
+
+        // Function to show the answer in the Easy Test tab
+        function showEasyAnswer() {
+            const easyTestAnswer = document.getElementById('easyTestAnswer');
+            if (currentEasyTestPattern) {
+                easyTestAnswer.textContent = `Letter: ${currentEasyTestPattern.letter}`;
+                easyTestAnswer.classList.remove('hidden');
+            }
+        }
+
+        // Function to reset the Easy Test tab (hide answer and show new pattern)
+        function resetEasyTest() {
+            displayRandomEasyPattern();
+        }
+
+
+        // Hard Test tab variables
+        let currentHardTestPattern = null; // Stores the currently displayed pattern data { letter, fillCircles, reflectX, reflectY }
+
+        // Function to display a random pattern (with potential reflections) in the Hard Test tab
+        function displayRandomHardPattern() {
+            const hardTestPatternDisplay = document.getElementById('hardTestPatternDisplay');
+            const hardTestAnswer = document.getElementById('hardTestAnswer');
+
+            // Hide answer initially
+            hardTestAnswer.classList.add('hidden');
+
+            // Pick a random row index from the canonical patterns
+            const randomIndex = Math.floor(Math.random() * allCanonicalPatterns.length);
+            const canonicalPattern = allCanonicalPatterns[randomIndex];
+
+            // Randomly determine reflection options
+            const reflectX = Math.random() < 0.5; // 50% chance for horizontal reflection
+            const reflectY = Math.random() < 0.5; // 50% chance for vertical reflection
+
+            currentHardTestPattern = {
+                letter: canonicalPattern.letter,
+                fillCircles: canonicalPattern.fillCircles,
+                reflectX: reflectX,
+                reflectY: reflectY
+            };
+
+            // Generate the SVG with the chosen reflection options
+            const svg = generateSVGTemplate({
+                reflectX: currentHardTestPattern.reflectX,
+                reflectY: currentHardTestPattern.reflectY,
+                fillCircles: currentHardTestPattern.fillCircles
+            });
+            hardTestPatternDisplay.innerHTML = svg;
+        }
+
+        // Function to show the answer in the Hard Test tab
+        function showHardAnswer() {
+            const hardTestAnswer = document.getElementById('hardTestAnswer');
+            if (currentHardTestPattern) {
+                hardTestAnswer.textContent = `Letter: ${currentHardTestPattern.letter}`;
+                hardTestAnswer.classList.remove('hidden');
+            }
+        }
+
+        // Function to reset the Hard Test tab (hide answer and show new pattern)
+        function resetHardTest() {
+            displayRandomHardPattern();
+        }
+
+
+        // Tab switching logic
+        function showTab(tabId) {
+            // Get all tab content elements
+            const allTabContents = document.querySelectorAll('.tab-content');
+            allTabContents.forEach(content => {
+                content.classList.add('hidden'); // Hide all tab contents
+            });
+
+            // Get all tab buttons
+            const allTabButtons = document.querySelectorAll('.tab-button');
+            allTabButtons.forEach(button => {
+                button.classList.remove('active'); // Deactivate all tab buttons
+            });
+
+            // Show the selected tab content and activate its button
+            document.getElementById(`${tabId}TabContent`).classList.remove('hidden');
+            // Use event.currentTarget to reliably get the button that was clicked
+            event.currentTarget.classList.add('active'); 
+
+            // If the 'all' tab is selected, ensure the grid is populated
+            if (tabId === 'all') {
+                // Only render if it's not already populated (or if explicitly needed for refresh)
+                if (imageGridContainer.children.length === 0 || imageGridContainer.children[0].textContent !== 'A') {
+                    renderAllTabGrid();
+                }
+            } else if (tabId === 'easyTest') {
+                displayRandomEasyPattern(); // Initialize easy test tab with a random pattern
+            } else if (tabId === 'hardTest') {
+                displayRandomHardPattern(); // Initialize hard test tab with a random pattern
+            }
+        }
+
+        // Initial setup when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            populateAllCanonicalPatterns(); // Generate the data for all patterns once
+            renderAllTabGrid(); // Render the 'All' tab initially
+        });
+    </script>
+</body>
+</html>
