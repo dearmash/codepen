@@ -539,11 +539,15 @@
     const file     = document.getElementById('modalImageInput').files[0];
     const name     = document.getElementById('modalNameInput').value.trim();
     const codeword = document.getElementById('modalCodewordInput').value.trim().toLowerCase();
-    const routine  = document.getElementById('modalRoutineInput').value.trim();
+    var routine  = document.getElementById('modalRoutineInput').value.trim();
 
     if (!file || !name || !codeword) {
       alert('All fields required.');
       return;
+    }
+
+    if (!routine) {
+      routine = 'unsorted';
     }
 
     const reader = new FileReader();
