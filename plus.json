@@ -1,0 +1,25 @@
+{
+  "name": "NOT.ESP+",
+  "short_name": "NOT.ESP+",
+  "icons": [{
+    "src": "nrune.jpg",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+        "src": "nrune.jpg",
+          "sizes": "320x568",
+          "type": "image/png"
+    },
+    {
+        "src": "nrune.jpg",
+          "sizes": "1280x1276",
+          "type": "image/png"
+    }],
+  "lang": "en-US",
+  "start_url": "not.esp.plus.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation":"portrait"
+}
