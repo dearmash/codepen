@@ -1,0 +1,800 @@
+<!DOCTYPE:html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Website</title>
+    <!-- Include Tailwind CSS from a CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Add Inter font for a modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Style for the modal overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .collapsible-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            max-height: 0;
+        }
+        .collapsible-content.expanded {
+            max-height: 500px;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-200 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Main container for the "home" view -->
+    <div id="main-view" class="flex flex-col items-center space-y-4 w-full max-w-xl">
+        
+        <!-- Text field to display routine codewords -->
+        <p id="codeword-display" class="w-full p-2 text-center text-gray-400 text-sm"></p>
+
+        <!-- Dropdown menu with dynamic options -->
+        <select id="routine-dropdown" class="bg-gray-800 text-gray-200 border-2 border-gray-700 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+            <!-- Options will be dynamically added here by JavaScript -->
+        </select>
+
+        <!-- Text box that gets focus automatically on page load -->
+        <input 
+            type="text" 
+            autofocus 
+            id="main-input"
+            placeholder="Type here..."
+            class="bg-gray-800 text-gray-200 border-2 border-gray-600 rounded-lg p-2 w-full placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+        <!-- Button to manage the routine -->
+        <button id="manage-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg w-full transition duration-300 ease-in-out transform hover:scale-105 shadow-lg">
+            manage
+        </button>
+
+    </div>
+
+    <!-- Container for the "manage" view, initially hidden -->
+    <div id="manage-view" class="hidden flex-col space-y-8 w-full max-w-xl">
+        
+        <div class="flex flex-col w-full space-y-4 items-center">
+            <!-- Back and display container -->
+            <div id="entries-display" class="w-full space-y-4">
+                <!-- Entries will be dynamically added here by JavaScript -->
+            </div>
+
+            <!-- Buttons at the bottom -->
+            <div class="flex justify-between w-full space-x-4">
+                <!-- Button to go back to the main view -->
+                <button id="back-button" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg flex-1">
+                    back
+                </button>
+                <!-- Button for adding a new entry -->
+                <button id="add-entry-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg flex-1">
+                    add entry
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal dialog for adding/editing entries, initially hidden -->
+    <div id="add-entry-modal" class="modal-overlay hidden">
+        <div class="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md space-y-6">
+            <h2 id="modal-title" class="text-2xl font-semibold text-white text-center">Add New Entry</h2>
+
+            <!-- Input fields -->
+            <div class="space-y-4">
+                <input type="text" id="code-word-input" placeholder="code word" class="bg-gray-700 text-gray-200 border-2 border-gray-600 rounded-lg p-2 w-full placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                
+                <!-- New dropdown for the action type -->
+                <select id="action-type-select" class="bg-gray-700 text-gray-200 border-2 border-gray-600 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="google_search" selected>Google Search</option>
+                    <!-- Added new option for Google Image Search -->
+                    <option value="google_image_search">Google Image Search</option>
+                    <option value="go_to_url">Go to URL</option>
+                    <option value="switch_routine">Switch routine</option>
+                </select>
+
+                <!-- Dynamic input fields based on dropdown selection -->
+                <input type="text" id="google-search-input" placeholder="search term" class="bg-gray-700 text-gray-200 border-2 border-gray-600 rounded-lg p-2 w-full placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="go-to-url-input" placeholder="URL" class="hidden bg-gray-700 text-gray-200 border-2 border-gray-600 rounded-lg p-2 w-full placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select id="switch-routine-input" class="hidden bg-gray-700 text-gray-200 border-2 border-gray-600 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <!-- This dropdown will be populated dynamically -->
+                </select>
+
+                <input type="text" id="routine-input" placeholder="routine" class="bg-gray-700 text-gray-200 border-2 border-gray-600 rounded-lg p-2 w-full placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <!-- Buttons for the modal -->
+            <div class="flex flex-col items-center space-y-4 mt-6">
+                <!-- Error message display area -->
+                <p id="error-message" class="text-red-400 text-center text-sm hidden"></p>
+                <div class="flex justify-between w-full space-x-4">
+                    <!-- Delete button (initially hidden) -->
+                    <button id="delete-button" class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg flex-1">
+                        delete
+                    </button>
+                    <div class="flex justify-end w-full space-x-4">
+                        <button id="cancel-button" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg">
+                            cancel
+                        </button>
+                        <button id="save-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105">
+                            save
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal for Deletion -->
+    <div id="confirm-modal" class="modal-overlay hidden">
+        <div class="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-sm text-center space-y-6">
+            <h2 class="text-2xl font-semibold text-white">Are you sure?</h2>
+            <div class="flex justify-center space-x-4">
+                <button id="no-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg w-24">
+                    no
+                </button>
+                <button id="yes-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg w-24">
+                    yes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Key for local storage
+        const LOCAL_STORAGE_KEY = 'disneyRoutineData';
+
+        // Default routine entries. The ID will be assigned on import.
+        const defaultEntries = [
+            // Aladdin
+            { codeWord: 'desert', action: 'switch_routine', value: 'aladdin', routine: 'disney' },
+            { codeWord: 'prince', action: 'google_image_search', value: 'aladdin disney character', routine: 'aladdin' },
+            { codeWord: 'princess', action: 'google_image_search', value: 'jasmine disney character', routine: 'aladdin' },
+            { codeWord: 'villain', action: 'google_image_search', value: 'jafar disney character', routine: 'aladdin' },
+
+            // Beauty and the Beast
+            { codeWord: 'countryside', action: 'switch_routine', value: 'beauty and the beast', routine: 'disney' },
+            { codeWord: 'prince', action: 'google_image_search', value: 'the beast disney character', routine: 'beauty and the beast' },
+            { codeWord: 'princess', action: 'google_image_search', value: 'belle disney character', routine: 'beauty and the beast' },
+            { codeWord: 'villain', action: 'google_image_search', value: 'gaston disney character', routine: 'beauty and the beast' },
+            
+            // Hercules
+            { codeWord: 'greece', action: 'switch_routine', value: 'hercules', routine: 'disney' },
+            { codeWord: 'prince', action: 'google_image_search', value: 'hercules disney character', routine: 'hercules' },
+            { codeWord: 'princess', action: 'google_image_search', value: 'megara disney character', routine: 'hercules' },
+            { codeWord: 'villain', action: 'google_image_search', value: 'hades disney character', routine: 'hercules' },
+
+            // Lion King
+            { codeWord: 'savanna', action: 'switch_routine', value: 'lion king', routine: 'disney' },
+            { codeWord: 'savannah', action: 'switch_routine', value: 'lion king', routine: 'disney' },
+            { codeWord: 'prince', action: 'google_image_search', value: 'simba disney character', routine: 'lion king' },
+            { codeWord: 'princess', action: 'google_image_search', value: 'nala disney character', routine: 'lion king' },
+            { codeWord: 'villain', action: 'google_image_search', value: 'scar disney character', routine: 'lion king' },
+
+            // Moana
+            { codeWord: 'ocean', action: 'switch_routine', value: 'moana', routine: 'disney' },
+            { codeWord: 'princess', action: 'google_image_search', value: 'moana disney character', routine: 'moana' },
+            { codeWord: 'demigod', action: 'google_image_search', value: 'maui disney character', routine: 'moana' },
+            { codeWord: 'goddess', action: 'google_image_search', value: 'te fiti disney character', routine: 'moana' },
+            { codeWord: 'pet', action: 'google_image_search', value: 'pua disney character', routine: 'moana' },
+            { codeWord: 'boat snack', action: 'google_image_search', value: 'hei hei disney character', routine: 'moana' },
+            { codeWord: 'villain', action: 'google_image_search', value: 'te ka disney villain', routine: 'moana' },
+
+            // Monsters Inc
+            { codeWord: 'closet', action: 'switch_routine', value: 'monsters inc', routine: 'disney' },
+            { codeWord: 'hero', action: 'google_image_search', value: 'sulley monsters inc character', routine: 'monsters inc' },
+            { codeWord: 'sidekick', action: 'google_image_search', value: 'mike wazowski monsters inc character', routine: 'monsters inc' },
+            { codeWord: 'boo', action: 'google_image_search', value: 'boo monsters inc character', routine: 'monsters inc' },
+            { codeWord: 'roz', action: 'google_image_search', value: 'roz monsters inc character', routine: 'monsters inc' },
+            { codeWord: 'abominable snowman', action: 'google_image_search', value: 'snowman monsters inc character', routine: 'monsters inc' },
+            
+            // Mulan
+            { codeWord: 'china', action: 'switch_routine', value: 'mulan', routine: 'disney' },
+            { codeWord: 'prince', action: 'google_image_search', value: 'li shang disney character', routine: 'mulan' },
+            { codeWord: 'princess', action: 'google_image_search', value: 'mulan disney character', routine: 'mulan' },
+            { codeWord: 'villain', action: 'google_image_search', value: 'shan yu disney character', routine: 'mulan' },
+
+            // Pocahontas
+            { codeWord: 'virginia', action: 'switch_routine', value: 'pocahontas', routine: 'disney' },
+            { codeWord: 'prince', action: 'google_image_search', value: 'john smith disney character', routine: 'pocahontas' },
+            { codeWord: 'princess', action: 'google_image_search', value: 'pocahontas disney character', routine: 'pocahontas' },
+            { codeWord: 'villain', action: 'google_image_search', value: 'ratcliffe disney character', routine: 'pocahontas' },
+        ];
+
+        // Function to assign IDs to a list of entries
+        function importEntries(entryList) {
+            let idCounter = 1;
+            return entryList.map(entry => {
+                // Return a new object with all properties of the original entry, plus a new ID
+                return {
+                    id: idCounter++,
+                    ...entry
+                };
+            });
+        }
+
+        // Retrieve data from local storage or use default entries
+        const savedEntries = localStorage.getItem(LOCAL_STORAGE_KEY);
+        let entries = savedEntries ? JSON.parse(savedEntries) : importEntries(defaultEntries);
+
+        // Get references to all buttons, views, and the modal
+        const manageButton = document.getElementById('manage-button');
+        const backButton = document.getElementById('back-button');
+        const addEntryButton = document.getElementById('add-entry-button');
+        const cancelButton = document.getElementById('cancel-button');
+        const saveButton = document.getElementById('save-button');
+        const deleteButton = document.getElementById('delete-button');
+        const mainView = document.getElementById('main-view');
+        const manageView = document.getElementById('manage-view');
+        const addEntryModal = document.getElementById('add-entry-modal');
+        const confirmModal = document.getElementById('confirm-modal');
+        const yesButton = document.getElementById('yes-button');
+        const noButton = document.getElementById('no-button');
+        const modalTitle = document.getElementById('modal-title');
+        const entriesDisplay = document.getElementById('entries-display');
+        const errorMessage = document.getElementById('error-message');
+        const mainInput = document.getElementById('main-input');
+        const codewordDisplay = document.getElementById('codeword-display');
+        const routineDropdown = document.getElementById('routine-dropdown');
+        const codeWordInput = document.getElementById('code-word-input');
+        const actionTypeSelect = document.getElementById('action-type-select');
+        const googleSearchInput = document.getElementById('google-search-input');
+        const goToUrlInput = document.getElementById('go-to-url-input');
+        const switchRoutineInput = document.getElementById('switch-routine-input');
+        const routineInput = document.getElementById('routine-input');
+
+        // Map for user-friendly display names
+        const actionMap = {
+            'google_search': 'Google Search',
+            'google_image_search': 'Google Image Search',
+            'go_to_url': 'Go to URL',
+            'switch_routine': 'Switch routine'
+        };
+
+        // Function to save the current state of the entries array to local storage
+        function saveToLocalStorage() {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(entries));
+        }
+
+        // Function to close the main modal
+        function closeModal() {
+            addEntryModal.classList.add('hidden');
+            addEntryModal.classList.remove('flex');
+            errorMessage.textContent = '';
+            errorMessage.classList.add('hidden');
+            deleteButton.classList.add('hidden');
+        }
+
+        // Function to close the confirmation modal
+        function closeConfirmModal() {
+            confirmModal.classList.add('hidden');
+            confirmModal.classList.remove('flex');
+        }
+
+        // Add a click listener to the modal overlay itself
+        addEntryModal.addEventListener('click', (event) => {
+            // Check if the click occurred directly on the overlay, not on the modal content
+            if (event.target === addEntryModal) {
+                closeModal();
+            }
+        });
+
+        // Add a click listener to the confirmation modal overlay
+        confirmModal.addEventListener('click', (event) => {
+            if (event.target === confirmModal) {
+                closeConfirmModal();
+            }
+        });
+
+        /**
+         * Renders the comma-separated list of codewords for the current routine.
+         */
+        function renderCodewordsDisplay() {
+            const currentRoutine = routineDropdown.value;
+            // Get all entries for the selected routine
+            const currentCodewords = entries
+                .filter(entry => entry.routine === currentRoutine)
+                .map(entry => entry.codeWord)
+                .join(', ');
+            
+            // Set the text content directly without any labels
+            codewordDisplay.textContent = currentCodewords;
+        }
+
+        // Ensure the main input is focused when the page first loads
+        window.onload = function() {
+            mainInput.focus();
+            renderRoutineDropdown();
+            // Set 'disney' as the default routine if it exists
+            const uniqueRoutines = [...new Set(entries.map(entry => entry.routine))].sort();
+            if (uniqueRoutines.includes('disney')) {
+                routineDropdown.value = 'disney';
+            }
+            renderCodewordsDisplay();
+        };
+
+        // Add a click listener to the entire body to focus the input field
+        document.body.addEventListener('click', (event) => {
+            // Check if the main view is visible and the click wasn't on a button or dropdown
+            if (!mainView.classList.contains('hidden') && event.target !== manageButton && event.target !== routineDropdown) {
+                mainInput.focus();
+            }
+        });
+
+        // Add an input event listener to the main input field to check for code words
+        mainInput.addEventListener('input', (event) => {
+            const currentRoutine = routineDropdown.value;
+            const inputText = event.target.value.trim().toLowerCase();
+            
+            // Find a matching entry in the current routine by checking if the input ends with a codeword
+            const matchedEntry = entries.find(entry => 
+                entry.routine.toLowerCase() === currentRoutine.toLowerCase() &&
+                inputText.endsWith(entry.codeWord.toLowerCase())
+            );
+
+            // If a match is found, perform the corresponding action
+            if (matchedEntry) {
+                switch (matchedEntry.action) {
+                    case 'switch_routine':
+                        // If the action is to switch the routine, update the dropdown value
+                        routineDropdown.value = matchedEntry.value;
+                        // Rerender the codewords display to show the new routine's codewords
+                        renderCodewordsDisplay();
+                        break;
+                    case 'google_search':
+                        // Open a Google search for the specified value in a new window/tab
+                        window.open(`https://www.google.com/search?q=${encodeURIComponent(matchedEntry.value)}`, '_blank');
+                        break;
+                    case 'google_image_search':
+                        // Open a Google Image search for the specified value in a new window/tab
+                        window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(matchedEntry.value)}`, '_blank');
+                        break;
+                    case 'go_to_url':
+                        // Open the specified URL in a new window/tab
+                        window.open(matchedEntry.value, '_blank');
+                        break;
+                }
+            }
+        });
+
+        /**
+         * Toggles the visibility of a routine's entries.
+         * @param {HTMLElement} headerElement - The clickable header element for the routine.
+         */
+        function toggleRoutine(headerElement) {
+            const list = headerElement.nextElementSibling;
+            const toggleIcon = headerElement.querySelector('.toggle-icon');
+
+            if (list.classList.contains('expanded')) {
+                list.classList.remove('expanded');
+                toggleIcon.textContent = '▼';
+            } else {
+                list.classList.add('expanded');
+                toggleIcon.textContent = '▲';
+            }
+        }
+
+        /**
+         * Opens the modal to add a new entry.
+         * @param {string} [routineName] - Optional routine name to pre-fill.
+         */
+        function openAddModal(routineName) {
+            // Set the modal title to indicate adding a new entry
+            modalTitle.textContent = 'Add New Entry';
+            // Clear any edit id from the save button
+            delete saveButton.dataset.editId;
+            // Clear the input fields
+            codeWordInput.value = '';
+            actionTypeSelect.value = 'google_search';
+            googleSearchInput.value = '';
+            goToUrlInput.value = '';
+            // Set the routine name if provided, otherwise leave it empty
+            routineInput.value = routineName || '';
+            showDynamicInput(); // Show the correct input for the default selection
+            
+            addEntryModal.classList.remove('hidden');
+            addEntryModal.classList.add('flex');
+            codeWordInput.focus();
+        }
+
+        /**
+         * Opens the modal to edit an existing entry.
+         * @param {number} entryId - The unique ID of the entry to edit.
+         */
+        function openEditModal(entryId) {
+            const entryToEdit = entries.find(entry => entry.id === entryId);
+            if (!entryToEdit) return; // Exit if entry is not found
+            
+            // Set the modal title to indicate editing
+            modalTitle.textContent = 'Edit Entry';
+            
+            // Show the delete button for editing existing entries
+            deleteButton.classList.remove('hidden');
+
+            // Populate the input fields with the existing entry data
+            codeWordInput.value = entryToEdit.codeWord;
+            actionTypeSelect.value = entryToEdit.action;
+            routineInput.value = entryToEdit.routine;
+
+            // Handle the dynamic input field based on the action type
+            showDynamicInput();
+            if (entryToEdit.action === 'google_search' || entryToEdit.action === 'google_image_search') {
+                googleSearchInput.value = entryToEdit.value;
+            } else if (entryToEdit.action === 'go_to_url') {
+                goToUrlInput.value = entryToEdit.value;
+            } else if (entryToEdit.action === 'switch_routine') {
+                switchRoutineInput.value = entryToEdit.value;
+            }
+
+            // Store the ID of the entry being edited on the save button
+            saveButton.dataset.editId = entryId;
+            
+            // Show the modal
+            addEntryModal.classList.remove('hidden');
+            addEntryModal.classList.add('flex');
+            codeWordInput.focus();
+        }
+
+        /**
+         * Renders the list of saved entries on the manage page, grouped by routine.
+         */
+        function renderEntries() {
+            // Clear previous entries to prevent duplicates
+            entriesDisplay.innerHTML = '';
+
+            if (entries.length === 0) {
+                entriesDisplay.innerHTML = '<p class="text-gray-400 text-center">No entries yet. Click "add entry" to create one.</p>';
+                return;
+            }
+
+            // Group entries by routine name
+            const routines = entries.reduce((acc, entry) => {
+                const routineName = entry.routine.toLowerCase();
+                if (!acc[routineName]) {
+                    acc[routineName] = [];
+                }
+                acc[routineName].push(entry);
+                return acc;
+            }, {});
+
+            // Get and sort the routine names alphabetically
+            const sortedRoutineNames = Object.keys(routines).sort();
+
+            // Create the HTML for the list based on the sorted order
+            for (const routineName of sortedRoutineNames) {
+                const routineDiv = document.createElement('div');
+                routineDiv.className = 'bg-gray-800 p-4 rounded-lg shadow-md';
+
+                const header = document.createElement('div');
+                // Use a larger click area for the header
+                header.className = 'flex justify-between items-center cursor-pointer p-2 -m-2'; 
+                
+                const routineTitle = document.createElement('div');
+                routineTitle.className = 'flex items-center space-x-2';
+                routineTitle.innerHTML = `<h3 class="text-xl font-bold text-white capitalize">${routineName}</h3>`;
+
+                // Add the plus button next to the routine name
+                const plusButton = document.createElement('button');
+                plusButton.className = 'text-green-400 hover:text-green-300 transition duration-200 ease-in-out p-1 rounded-full hover:bg-gray-700';
+                plusButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>`;
+                plusButton.onclick = (event) => {
+                    event.stopPropagation(); // Prevent the parent collapsible from toggling
+                    openAddModal(routineName);
+                };
+                routineTitle.appendChild(plusButton);
+                
+                header.appendChild(routineTitle);
+
+                const toggleIcon = document.createElement('span');
+                toggleIcon.className = 'toggle-icon text-xl text-white';
+                toggleIcon.textContent = '▼'; // Initial state: collapsed
+                header.appendChild(toggleIcon);
+
+                // Add the click event to the header itself to toggle the list
+                header.onclick = () => toggleRoutine(header);
+
+                routineDiv.appendChild(header);
+
+                const entryList = document.createElement('ul');
+                // The collapsible content now has no top padding or margin
+                entryList.className = 'list-disc list-inside space-y-1 collapsible-content';
+
+                const routineEntries = routines[routineName].sort((a, b) => a.codeWord.localeCompare(b.codeWord));
+                routineEntries.forEach(entry => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'text-gray-300 flex items-center justify-between';
+                    
+                    // Container for the text content
+                    const textContainer = document.createElement('div');
+                    
+                    // Display the codeword
+                    const codewordSpan = document.createElement('span');
+                    codewordSpan.textContent = `${entry.codeWord} - `;
+                    codewordSpan.classList.add('font-medium', 'text-gray-200');
+                    textContainer.appendChild(codewordSpan);
+
+                    // Display the action name
+                    const actionName = actionMap[entry.action] || entry.action;
+                    const actionSpan = document.createElement('span');
+                    actionSpan.textContent = `${actionName}: `;
+                    textContainer.appendChild(actionSpan);
+
+                    // If the action is a google search or image search, create a link
+                    if (entry.action === 'google_search' || entry.action === 'google_image_search' || entry.action === 'go_to_url') {
+                        const link = document.createElement('a');
+                        let searchUrl = '';
+                        if (entry.action === 'google_search') {
+                             searchUrl = `https://www.google.com/search?q=${encodeURIComponent(entry.value)}`;
+                        } else if (entry.action === 'google_image_search') {
+                            searchUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(entry.value)}`;
+                        } else if (entry.action === 'go_to_url') {
+                             searchUrl = entry.value;
+                        }
+                        link.href = searchUrl;
+                        link.textContent = entry.value;
+                        link.target = '_blank';
+                        link.className = 'text-blue-400 hover:underline transition duration-200 ease-in-out';
+                        textContainer.appendChild(link);
+                    } else {
+                        // Otherwise, just display the value as text
+                        const valueSpan = document.createElement('span');
+                        valueSpan.textContent = entry.value;
+                        textContainer.appendChild(valueSpan);
+                    }
+                    
+                    listItem.appendChild(textContainer);
+
+                    // Add the edit button
+                    const editButton = document.createElement('button');
+                    editButton.className = 'text-gray-400 hover:text-white transition duration-200 ease-in-out p-1 rounded-full hover:bg-gray-700';
+                    editButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>`;
+                    // Store the unique ID on the button
+                    editButton.onclick = () => openEditModal(entry.id);
+                    listItem.appendChild(editButton);
+
+                    entryList.appendChild(listItem);
+                });
+
+                routineDiv.appendChild(entryList);
+                entriesDisplay.appendChild(routineDiv);
+            }
+        }
+
+        /**
+         * Populates the routine dropdown menu on the main view and the modal.
+         */
+        function renderRoutineDropdown() {
+            // Clear previous options to prevent duplicates
+            routineDropdown.innerHTML = '';
+            
+            // Add a default, disabled option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'routine';
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            routineDropdown.appendChild(defaultOption);
+
+            // Get unique routine names from the entries and sort them alphabetically
+            const uniqueRoutines = [...new Set(entries.map(entry => entry.routine))].sort();
+
+            // Add an option for each unique routine
+            uniqueRoutines.forEach(routine => {
+                const option = document.createElement('option');
+                option.value = routine;
+                option.textContent = routine;
+                routineDropdown.appendChild(option);
+            });
+
+            // Also populate the modal's switch routine dropdown
+            switchRoutineInput.innerHTML = '';
+            uniqueRoutines.forEach(routine => {
+                const option = document.createElement('option');
+                option.value = routine;
+                option.textContent = routine;
+                switchRoutineInput.appendChild(option);
+            });
+        }
+        
+        /**
+         * Shows the correct dynamic input field based on the dropdown selection.
+         */
+        function showDynamicInput() {
+            // Hide all dynamic inputs first
+            googleSearchInput.classList.add('hidden');
+            goToUrlInput.classList.add('hidden');
+            switchRoutineInput.classList.add('hidden');
+
+            // Show the selected one
+            const selectedAction = actionTypeSelect.value;
+            if (selectedAction === 'google_search' || selectedAction === 'google_image_search') {
+                googleSearchInput.classList.remove('hidden');
+                googleSearchInput.focus();
+            } else if (selectedAction === 'go_to_url') {
+                goToUrlInput.classList.remove('hidden');
+                goToUrlInput.focus();
+            } else if (selectedAction === 'switch_routine') {
+                switchRoutineInput.classList.remove('hidden');
+                switchRoutineInput.focus();
+            }
+        }
+
+        // Add event listener to the action type dropdown
+        actionTypeSelect.addEventListener('change', showDynamicInput);
+        
+        // Add event listener to the routine dropdown to focus the main input and clear it
+        routineDropdown.addEventListener('change', () => {
+            mainInput.value = ''; // Clear the input when the routine changes
+            mainInput.focus();
+            renderCodewordsDisplay();
+        });
+
+
+        // Add a click event listener to the "manage" button to switch views
+        manageButton.addEventListener('click', () => {
+            mainView.classList.add('hidden');
+            manageView.classList.remove('hidden');
+            manageView.classList.add('flex');
+            // Render entries when the manage view is shown
+            renderEntries();
+        });
+        
+        // Add a click event listener to the "back" button to switch views
+        backButton.addEventListener('click', () => {
+            manageView.classList.add('hidden');
+            manageView.classList.remove('flex'); // Also remove flex to ensure proper hiding
+            mainView.classList.remove('hidden');
+            mainView.classList.add('flex');
+            // Re-render the dropdown and then set the value
+            renderRoutineDropdown();
+            // Reset the routine dropdown to 'disney'
+            routineDropdown.value = 'disney';
+            // Re-focus the main input when returning to the home view
+            mainInput.focus();
+            // Re-render the dropdown and codeword display on back navigation
+            renderCodewordsDisplay();
+        });
+
+        // Add a click event listener to the "add entry" button to show the modal
+        addEntryButton.addEventListener('click', () => {
+            openAddModal(); // Call the refactored function without a routine name
+        });
+
+        // Add a click event listener to the "cancel" button to hide the modal
+        cancelButton.addEventListener('click', () => {
+            closeModal();
+        });
+
+        // Add a click listener to the delete button
+        deleteButton.addEventListener('click', () => {
+            const entryId = saveButton.dataset.editId;
+            if (entryId) {
+                // Store the ID on the yes button for confirmation
+                yesButton.dataset.deleteId = entryId;
+                // Close the edit modal and show the confirmation modal
+                closeModal();
+                confirmModal.classList.remove('hidden');
+                confirmModal.classList.add('flex');
+            }
+        });
+
+        // Add a click listener for the "yes" button in the confirmation modal
+        yesButton.addEventListener('click', () => {
+            const entryIdToDelete = parseInt(yesButton.dataset.deleteId);
+            if (!isNaN(entryIdToDelete)) {
+                // Filter out the entry to be deleted
+                entries = entries.filter(entry => entry.id !== entryIdToDelete);
+                
+                // Clear the deleteId from the yes button
+                delete yesButton.dataset.deleteId;
+
+                // Save the updated entries to local storage
+                saveToLocalStorage();
+
+                // Re-render the list and dropdown
+                renderEntries();
+                renderRoutineDropdown();
+            }
+            closeConfirmModal();
+        });
+
+        // Add a click listener for the "no" button in the confirmation modal
+        noButton.addEventListener('click', () => {
+            // Clear the deleteId from the yes button
+            delete yesButton.dataset.deleteId;
+            // Close the confirmation modal and re-open the edit modal
+            closeConfirmModal();
+            addEntryModal.classList.remove('hidden');
+            addEntryModal.classList.add('flex');
+            // Show the delete button again since we are returning to the edit view
+            deleteButton.classList.remove('hidden');
+        });
+
+        // "Save" button functionality
+        saveButton.addEventListener('click', () => {
+            // Get values from the input fields
+            const codeWord = codeWordInput.value.trim();
+            const action = actionTypeSelect.value;
+            const routine = routineInput.value.trim();
+            
+            // Get the value from the currently visible dynamic input
+            let value;
+            if (action === 'google_search' || action === 'google_image_search') {
+                value = googleSearchInput.value.trim();
+            } else if (action === 'go_to_url') {
+                value = goToUrlInput.value.trim();
+            } else if (action === 'switch_routine') {
+                value = switchRoutineInput.value.trim();
+            }
+            
+            // Clear previous error message
+            errorMessage.textContent = '';
+            errorMessage.classList.add('hidden');
+            
+            // Check if all fields are filled
+            if (codeWord && action && routine && value) {
+                // Check if we are in edit mode
+                const editId = parseInt(saveButton.dataset.editId);
+                if (!isNaN(editId)) {
+                    // Find the index of the entry with the matching ID
+                    const entryIndex = entries.findIndex(entry => entry.id === editId);
+                    if (entryIndex !== -1) {
+                         // Update the existing entry
+                        entries[entryIndex] = { id: editId, codeWord, action, value, routine };
+                    }
+                } else {
+                    // Find the highest current ID and add 1 for the next ID
+                    const maxId = entries.length > 0 ? entries.reduce((max, entry) => Math.max(max, entry.id), 0) : 0;
+                    const nextId = maxId + 1;
+                    // Add a new entry
+                    const newEntry = { id: nextId, codeWord, action, value, routine };
+                    entries.push(newEntry);
+                }
+                
+                // Save the updated entries to local storage
+                saveToLocalStorage();
+
+                // Render the updated list
+                renderEntries();
+                // Update the dropdown with the new routine
+                renderRoutineDropdown();
+                // Update the codeword display
+                renderCodewordsDisplay();
+
+                // Hide the modal after saving
+                closeModal();
+
+                // Clear the input fields and the edit id for the next use
+                codeWordInput.value = '';
+                googleSearchInput.value = '';
+                goToUrlInput.value = '';
+                routineInput.value = '';
+                delete saveButton.dataset.editId;
+                
+            } else {
+                // Display the error message on the page
+                errorMessage.textContent = 'Please fill out all fields.';
+                errorMessage.classList.remove('hidden');
+            }
+        });
+    </script>
+
+</body>
+</html>
