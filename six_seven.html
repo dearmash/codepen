@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silver Six Seven Soccer Team</title>
+    <!-- Inter font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom style for the font and background -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        /* Custom styles for the tab buttons to give them a page-like appearance */
+        .tab-btn.active-tab {
+            background-color: #ffffff; /* Matches the content background */
+            border-bottom: 2px solid #ffffff; /* Hides the bottom border to blend with the content */
+            margin-bottom: -2px; /* Pulls the tab down slightly to overlap the border */
+        }
+        /* Hide the scrollbar but keep the scroll functionality */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+        
+        /* --- PRINT STYLES --- */
+        @media print {
+            body {
+                background-color: #fff;
+                color: #000;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            /* Hide elements that shouldn't be printed */
+            .no-print, header, nav, #addPlayerBtn, #playerNameInput, #playerNumberInput, #stats-content {
+                display: none !important;
+            }
+            /* This is the corrected rule: hide any tab content that has the 'hidden' class */
+            .tab-content.hidden {
+                display: none !important;
+            }
+            /* Show only the active content and make it full width */
+            .main-container {
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+            }
+            /* Explicitly remove padding from the main tab content container */
+            #tab-content-container {
+                padding: 0 !important;
+            }
+            .tab-content {
+                display: block !important;
+                position: static !important;
+                background-color: #fff !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                width: 100% !important;
+                max-width: none !important;
+            }
+            /* Adjust padding and margins for a more compact print layout */
+            .p-4, .sm:p-8, .p-6 {
+                padding: 0 !important;
+            }
+            .gap-6 {
+                gap: 0 !important; /* Remove gap between quarters */
+            }
+            /* Remove margins from space-y classes for printing */
+            .space-y-4 > *, .space-y-2 > * {
+                margin-top: 0 !important;
+            }
+
+            /* Revert to two-column grid for printing */
+            .grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+            
+            /* Smaller position labels */
+            .quarter-label {
+                font-size: 0.75rem !important; /* text-xs */
+                line-height: 1rem !important;
+            }
+            
+            /* Larger and bolded text in select dropdowns for better readability */
+            .quarter-select {
+                font-size: 1.5rem !important; /* text-xl */
+                line-height: 1.75rem !important;
+                text-align: center !important; /* This centers the player name */
+                font-weight: bold;
+            }
+
+            /* Hide the dropdown arrow */
+            select {
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+            }
+            
+            /* Make quarter title smaller and absolute positioned */
+            .quarter-container {
+                position: relative;
+                padding: 1rem !important;
+                border: 2px solid #000 !important; /* Change border thickness to 2px */
+                border-radius: 0 !important; /* Remove rounded corners */
+                box-shadow: none !important; /* Remove shadows for printing */
+            }
+            .quarter-title {
+                position: absolute;
+                top: 0.25rem;
+                left: 0.25rem;
+                font-size: 0.75rem !important; /* text-xs */
+                font-weight: bold;
+                color: #000 !important;
+            }
+
+            /* Make bench a single line */
+            .bench-container {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 0.25rem;
+                font-size: 0.75rem !important; /* Makes bench text smaller */
+            }
+            .bench-title {
+                font-weight: bold;
+                font-size: 0.75rem !important; /* Makes bench title text smaller */
+            }
+
+            /* Force black and white rendering and remove shadows/backgrounds */
+            *, *:before, *:after {
+                background: transparent !important;
+                box-shadow: none !important;
+                text-shadow: none !important;
+                color: #000 !important;
+                /* This is a crucial property for forcing black and white print */
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            /* Ensure dropdowns and labels look clean */
+            select {
+                border: 1px solid #000 !important;
+                background-color: #fff !important;
+            }
+            /* Set landscape orientation for printing */
+            @page {
+                size: landscape;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <!-- Main container for the entire website, centered and with a max-width -->
+    <div class="max-w-7xl mx-auto bg-gray-100 rounded-lg shadow-xl p-4 sm:p-8 main-container">
+
+        <!-- Header uses a CSS Grid to keep the title centered -->
+        <header class="grid grid-cols-[1fr_auto_1fr] items-center mb-6">
+            <div></div>
+            <div class="text-center">
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-blue-800">Silver Six Seven</h1>
+                <p class="text-lg text-gray-600 mt-2">U8 Soccer Team</p>
+            </div>
+            <div></div>
+        </header>
+
+        <!-- Navigation tabs container. The `flex` and `overflow-x-auto` classes enable horizontal scrolling -->
+        <nav class="flex overflow-x-auto whitespace-nowrap hide-scrollbar justify-start gap-2 mb-0 mx-4" id="tabs-nav">
+            <!-- Roster Tab Button -->
+            <button
+                class="tab-btn flex-shrink-0 px-4 py-2 font-semibold text-sm transition-colors duration-300 transform hover:scale-105 rounded-t-lg shadow-lg"
+                data-tab="roster">
+                Roster
+            </button>
+            <!-- Stats Tab Button -->
+            <button
+                class="tab-btn flex-shrink-0 px-4 py-2 font-semibold text-sm transition-colors duration-300 transform hover:scale-105 rounded-t-lg border-b-0"
+                data-tab="stats">
+                Stats
+            </button>
+            <!-- Game 1 Tab Button -->
+            <button
+                class="tab-btn flex-shrink-0 px-4 py-2 font-semibold text-sm transition-colors duration-300 transform hover:scale-105 rounded-t-lg border-b-0"
+                data-tab="game-1">
+                Game 1
+            </button>
+            <!-- Game 2 Tab Button -->
+            <button
+                class="tab-btn flex-shrink-0 px-4 py-2 font-semibold text-sm transition-colors duration-300 transform hover:scale-105 rounded-t-lg border-b-0"
+                data-tab="game-2">
+                Game 2
+            </button>
+            <!-- Game 3 Tab Button -->
+            <button
+                class="tab-btn flex-shrink-0 px-4 py-2 font-semibold text-sm transition-colors duration-300 transform hover:scale-105 rounded-t-lg border-b-0"
+                data-tab="game-3">
+                Game 3
+            </button>
+            <!-- Game 4 Tab Button -->
+            <button
+                class="tab-btn flex-shrink-0 px-4 py-2 font-semibold text-sm transition-colors duration-300 transform hover:scale-105 rounded-t-lg border-b-0"
+                data-tab="game-4">
+                Game 4
+            </button>
+            <!-- Game 5 Tab Button -->
+            <button
+                class="tab-btn flex-shrink-0 px-4 py-2 font-semibold text-sm transition-colors duration-300 transform hover:scale-105 rounded-t-lg border-b-0"
+                data-tab="game-5">
+                Game 5
+            </button>
+            <!-- Game 6 Tab Button -->
+            <button
+                class="tab-btn flex-shrink-0 px-4 py-2 font-semibold text-sm transition-colors duration-300 transform hover:scale-105 rounded-t-lg border-b-0"
+                data-tab="game-6">
+                Game 6
+            </button>
+            <!-- Game 7 Tab Button -->
+            <button
+                class="tab-btn flex-shrink-0 px-4 py-2 font-semibold text-sm transition-colors duration-300 transform hover:scale-105 rounded-t-lg border-b-0"
+                data-tab="game-7">
+                Game 7
+            </button>
+            <!-- Game 8 Tab Button -->
+            <button
+                class="tab-btn flex-shrink-0 px-4 py-2 font-semibold text-sm transition-colors duration-300 transform hover:scale-105 rounded-t-lg border-b-0"
+                data-tab="game-8">
+                Game 8
+            </button>
+            <!-- Game 9 Tab Button -->
+            <button
+                class="tab-btn flex-shrink-0 px-4 py-2 font-semibold text-sm transition-colors duration-300 transform hover:scale-105 rounded-t-lg border-b-0"
+                data-tab="game-9">
+                Game 9
+            </button>
+            <!-- Game 10 Tab Button -->
+            <button
+                class="tab-btn flex-shrink-0 px-4 py-2 font-semibold text-sm transition-colors duration-300 transform hover:scale-105 rounded-t-lg border-b-0"
+                data-tab="game-10">
+                Game 10
+            </button>
+        </nav>
+
+        <!-- Tab content container. The `border-t-0` class hides the top border to create a continuous look with the active tab -->
+        <div id="tab-content-container" class="bg-white p-6 rounded-lg shadow-inner border border-gray-200 border-t-0">
+            <!-- Roster Tab Content -->
+            <div id="roster-content" class="tab-content">
+                <div class="space-y-4">
+                    <!-- Form to add players, now hidden -->
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-inner hidden">
+                        <h2 class="text-xl font-bold text-gray-700 mb-4">Add Player to Roster</h2>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <input type="text" id="playerNameInput" placeholder="Player Name" class="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                            <input type="number" id="playerNumberInput" placeholder="Jersey #" class="w-24 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                            <button id="addPlayerBtn" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
+                                Add Player
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Roster list -->
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+                        <h2 class="text-xl font-bold text-gray-700 mb-4">Current Roster</h2>
+                        <ul id="rosterList" class="space-y-2">
+                            <!-- Roster items will be dynamically added here -->
+                            <li id="loading-roster" class="text-gray-500 text-center">Loading roster...</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- NEW: Data Management buttons at the bottom of the roster page -->
+                <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4 no-print">
+                    <button id="exportDataBtn" onclick="exportData()" class="bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-gray-600 transition-colors duration-200">
+                        Export All Data
+                    </button>
+                    <label class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 cursor-pointer text-center">
+                        Import All Data
+                        <input type="file" id="importFile" accept="application/json" class="hidden">
+                    </label>
+                    <button id="resetDataBtn" onclick="resetData()" class="bg-red-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200">
+                        Reset All Data
+                    </button>
+                </div>
+
+            </div>
+            <!-- Stats Tab Content -->
+            <div id="stats-content" class="tab-content hidden">
+                <h2 class="text-xl font-bold text-gray-700 mb-4">Player Stats</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full table-auto border-collapse bg-gray-50 rounded-lg shadow-inner">
+                        <thead class="text-gray-600 uppercase text-xs font-semibold border-b border-gray-200">
+                            <tr>
+                                <th class="p-4 text-left">Player</th>
+                                <th class="p-4 text-center">Utilization</th>
+                                <th class="p-4 text-center">Forward</th>
+                                <th class="p-4 text-center">Mid</th>
+                                <th class="p-4 text-center">Defense</th>
+                                <th class="p-4 text-center">Goal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stats-table-body" class="divide-y divide-gray-200">
+                            <!-- Stats rows will be dynamically populated here -->
+                            <tr>
+                                <td colspan="6" class="p-4 text-center text-gray-500 italic">
+                                    No game data available.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Game 1 Tab Content -->
+            <div id="game-1-content" class="tab-content hidden">
+                <!-- New print button added here -->
+                <div class="w-full flex justify-center mb-6 no-print">
+                    <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
+                        Print Lineup
+                    </button>
+                </div>
+                <!-- Game 1 container with responsive grid layout -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6" id="game-1-container">
+                    <!-- Quarter sections will be dynamically added here -->
+                </div>
+            </div>
+            <!-- Game 2 Tab Content -->
+            <div id="game-2-content" class="tab-content hidden">
+                <div class="w-full flex justify-center mb-6 space-x-4 no-print">
+                    <button onclick="copyPreviousLineup('game-2')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
+                        Copy from Previous
+                    </button>
+                    <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
+                        Print Lineup
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6" id="game-2-container"></div>
+            </div>
+            <!-- Game 3 Tab Content -->
+            <div id="game-3-content" class="tab-content hidden">
+                <div class="w-full flex justify-center mb-6 space-x-4 no-print">
+                    <button onclick="copyPreviousLineup('game-3')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
+                        Copy from Previous
+                    </button>
+                    <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
+                        Print Lineup
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6" id="game-3-container"></div>
+            </div>
+            <!-- Game 4 Tab Content -->
+            <div id="game-4-content" class="tab-content hidden">
+                <div class="w-full flex justify-center mb-6 space-x-4 no-print">
+                    <button onclick="copyPreviousLineup('game-4')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
+                        Copy from Previous
+                    </button>
+                    <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
+                        Print Lineup
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6" id="game-4-container"></div>
+            </div>
+            <!-- Game 5 Tab Content -->
+            <div id="game-5-content" class="tab-content hidden">
+                <div class="w-full flex justify-center mb-6 space-x-4 no-print">
+                    <button onclick="copyPreviousLineup('game-5')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
+                        Copy from Previous
+                    </button>
+                    <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
+                        Print Lineup
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6" id="game-5-container"></div>
+            </div>
+            <!-- Game 6 Tab Content -->
+            <div id="game-6-content" class="tab-content hidden">
+                <div class="w-full flex justify-center mb-6 space-x-4 no-print">
+                    <button onclick="copyPreviousLineup('game-6')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
+                        Copy from Previous
+                    </button>
+                    <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
+                        Print Lineup
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6" id="game-6-container"></div>
+            </div>
+            <!-- Game 7 Tab Content -->
+            <div id="game-7-content" class="tab-content hidden">
+                <div class="w-full flex justify-center mb-6 space-x-4 no-print">
+                    <button onclick="copyPreviousLineup('game-7')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
+                        Copy from Previous
+                    </button>
+                    <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
+                        Print Lineup
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6" id="game-7-container"></div>
+            </div>
+            <!-- Game 8 Tab Content -->
+            <div id="game-8-content" class="tab-content hidden">
+                <div class="w-full flex justify-center mb-6 space-x-4 no-print">
+                    <button onclick="copyPreviousLineup('game-8')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
+                        Copy from Previous
+                    </button>
+                    <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
+                        Print Lineup
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6" id="game-8-container"></div>
+            </div>
+            <!-- Game 9 Tab Content -->
+            <div id="game-9-content" class="tab-content hidden">
+                <div class="w-full flex justify-center mb-6 space-x-4 no-print">
+                    <button onclick="copyPreviousLineup('game-9')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
+                        Copy from Previous
+                    </button>
+                    <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
+                        Print Lineup
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6" id="game-9-container"></div>
+            </div>
+            <!-- Game 10 Tab Content -->
+            <div id="game-10-content" class="tab-content hidden">
+                <div class="w-full flex justify-center mb-6 space-x-4 no-print">
+                    <button onclick="copyPreviousLineup('game-10')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
+                        Copy from Previous
+                    </button>
+                    <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
+                        Print Lineup
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6" id="game-10-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get all the tab buttons and all the content divs
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const rosterList = document.getElementById('rosterList');
+
+        // Main data structure to hold lineups for all games
+        // This is the in-memory cache of the data from IndexedDB
+        let gameLineups = {};
+
+        // Add a click event listener to each button
+        tabButtons.forEach(button => {
+            button.addEventListener('click', async () => {
+                const tabId = button.dataset.tab;
+                
+                // Save the selected tab to local storage
+                localStorage.setItem('activeTab', tabId);
+
+                // Reset all tab buttons to inactive state
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('active-tab', 'bg-white', 'text-gray-800', 'shadow-lg');
+                    btn.classList.add('bg-gray-300', 'text-gray-800', 'hover:bg-gray-400');
+                });
+                // Set the clicked button to active state
+                button.classList.add('active-tab', 'bg-white', 'text-gray-800', 'shadow-lg');
+                button.classList.remove('bg-gray-300', 'text-gray-800', 'hover:bg-gray-400');
+                
+                // Hide all tab content
+                tabContents.forEach(content => {
+                    content.classList.add('hidden');
+                });
+                // Show the content corresponding to the clicked tab
+                const contentToShow = document.getElementById(`${tabId}-content`);
+                if (contentToShow) {
+                    contentToShow.classList.remove('hidden');
+                }
+
+                // If a game tab is clicked, render the lineup template for that game
+                if (tabId.startsWith('game-')) {
+                    // This is an async call to load data first
+                    await renderGameTab(tabId);
+                } else if (tabId === 'stats') {
+                    // If the stats tab is clicked, render the stats table
+                    await renderStatsTable();
+                }
+            });
+        });
+
+        // --- IndexedDB Logic ---
+        let db;
+        const DB_NAME = 'soccerTeamDB';
+        // We are incrementing the version to trigger the onupgradeneeded event
+        // This is necessary to create the new object store for game lineups
+        const DB_VERSION = 2;
+        const OBJECT_STORE_NAME_ROSTER = 'roster';
+        const OBJECT_STORE_NAME_LINEUPS = 'gameLineups';
+
+        // Function to open the IndexedDB database
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = window.indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onupgradeneeded = event => {
+                    db = event.target.result;
+                    // Create the object store for the roster if it doesn't exist
+                    if (!db.objectStoreNames.contains(OBJECT_STORE_NAME_ROSTER)) {
+                        db.createObjectStore(OBJECT_STORE_NAME_ROSTER, { keyPath: 'id', autoIncrement: true });
+                    }
+                    // Create the object store for game lineups
+                    if (!db.objectStoreNames.contains(OBJECT_STORE_NAME_LINEUPS)) {
+                        db.createObjectStore(OBJECT_STORE_NAME_LINEUPS, { keyPath: 'id' });
+                    }
+                };
+
+                request.onsuccess = event => {
+                    db = event.target.result;
+                    resolve(db);
+                };
+
+                request.onerror = event => {
+                    reject('IndexedDB Error: ' + event.target.errorCode);
+                };
+            });
+        }
+
+        // Function to load all players from IndexedDB
+        async function loadRoster() {
+            if (!db) {
+                displayMessage('Database not ready.', 'error');
+                return [];
+            }
+            try {
+                const transaction = db.transaction([OBJECT_STORE_NAME_ROSTER], 'readonly');
+                const store = transaction.objectStore(OBJECT_STORE_NAME_ROSTER);
+                const players = await new Promise((resolve, reject) => {
+                    const players = [];
+                    const cursorRequest = store.openCursor();
+                    cursorRequest.onsuccess = event => {
+                        const cursor = event.target.result;
+                        if (cursor) {
+                            const player = cursor.value;
+                            // Ensure the player object has an id property for consistency
+                            player.id = cursor.key;
+                            players.push(player);
+                            cursor.continue();
+                        } else {
+                            resolve(players);
+                        }
+                    };
+                    cursorRequest.onerror = event => {
+                        reject('Error opening cursor: ' + event.target.errorCode);
+                    };
+                });
+                // Sort players alphabetically by name
+                players.sort((a, b) => a.name.localeCompare(b.name));
+                return players;
+            } catch (e) {
+                console.error("Error loading roster: ", e);
+                displayMessage('Error loading roster. Please try again.', 'error');
+                return [];
+            }
+        }
+        
+        // Function to get a count of players in the database
+        async function getPlayerCount() {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    resolve(0); 
+                    return;
+                }
+                const transaction = db.transaction([OBJECT_STORE_NAME_ROSTER], 'readonly');
+                const store = transaction.objectStore(OBJECT_STORE_NAME_ROSTER);
+                const countRequest = store.count();
+                countRequest.onsuccess = event => {
+                    resolve(event.target.result);
+                };
+                countRequest.onerror = event => {
+                    reject('Error getting player count.');
+                };
+            });
+        }
+
+        // Function to populate the roster with a predefined list of players
+        async function initializeRoster() {
+            const initialPlayers = [
+                "Alan D", "Auden G", "Christian H", "Cillian C", "Cooper G", "Ethan T", "Henry G", "JC M", "Owen A-H", "Owen R", "Randy S", "Teddy W", "Vaughn J"
+            ];
+
+            try {
+                const transaction = db.transaction([OBJECT_STORE_NAME_ROSTER], 'readwrite');
+                const store = transaction.objectStore(OBJECT_STORE_NAME_ROSTER);
+                
+                let jerseyNumber = 1;
+                for (const name of initialPlayers) {
+                    const newPlayer = {
+                        name: name,
+                        number: jerseyNumber++,
+                    };
+                    store.add(newPlayer);
+                }
+                return new Promise((resolve, reject) => {
+                    transaction.oncomplete = () => {
+                        displayMessage('Initial roster loaded successfully!', 'success');
+                        resolve();
+                    };
+                    transaction.onerror = (e) => {
+                        reject('Failed to add initial roster: ' + e.target.errorCode);
+                    };
+                });
+            } catch (e) {
+                console.error("Error initializing roster:", e);
+                throw new Error('Could not initialize roster.');
+            }
+        }
+        
+        // NEW: Function to get a saved lineup from the database for a specific game ID
+        async function getLineupFromDB(gameId) {
+            try {
+                const transaction = db.transaction([OBJECT_STORE_NAME_LINEUPS], 'readonly');
+                const store = transaction.objectStore(OBJECT_STORE_NAME_LINEUPS);
+                const request = store.get(gameId);
+
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = event => {
+                        resolve(event.target.result);
+                    };
+                    request.onerror = event => {
+                        reject('Error getting lineup from DB: ' + event.target.errorCode);
+                    };
+                });
+            } catch (e) {
+                console.error("Error retrieving lineup:", e);
+                return null;
+            }
+        }
+
+        // NEW: Function to save the current lineup for a specific game to the database
+        async function saveLineupToDB(gameId, lineupData) {
+            if (!db) return; // Exit if DB is not ready
+            try {
+                const transaction = db.transaction([OBJECT_STORE_NAME_LINEUPS], 'readwrite');
+                const store = transaction.objectStore(OBJECT_STORE_NAME_LINEUPS);
+                
+                // Using .put() will update the record if it exists, or add a new one if it doesn't
+                const request = store.put({ id: gameId, lineup: lineupData });
+                
+                request.onsuccess = () => {
+                    console.log(`Lineup for ${gameId} saved successfully.`);
+                };
+                request.onerror = event => {
+                    console.error("Error saving lineup: ", event.target.errorCode);
+                };
+            } catch (e) {
+                console.error("Error during save transaction:", e);
+            }
+        }
+
+        // NEW: Function to update a player's jersey number in IndexedDB
+        async function updatePlayerNumber(playerId, newNumber) {
+            if (!db) {
+                displayMessage('Database not ready.', 'error');
+                return;
+            }
+
+            try {
+                const transaction = db.transaction([OBJECT_STORE_NAME_ROSTER], 'readwrite');
+                const store = transaction.objectStore(OBJECT_STORE_NAME_ROSTER);
+                
+                // Get the player to update
+                const player = await new Promise((resolve, reject) => {
+                    const getRequest = store.get(playerId);
+                    getRequest.onsuccess = event => resolve(event.target.result);
+                    getRequest.onerror = event => reject(event.target.error);
+                });
+
+                if (player) {
+                    player.number = newNumber;
+                    await new Promise((resolve, reject) => {
+                        const putRequest = store.put(player);
+                        putRequest.onsuccess = () => resolve();
+                        putRequest.onerror = event => reject(event.target.error);
+                    });
+                    displayMessage(`Updated ${player.name}'s jersey number to #${newNumber}.`, 'success');
+                    // Re-render the list to reflect the new sorting order
+                    renderRosterList();
+                } else {
+                    displayMessage('Player not found.', 'error');
+                }
+            } catch (e) {
+                console.error("Error updating player number:", e);
+                displayMessage('Failed to update player number. Please try again.', 'error');
+            }
+        }
+
+        // Function to render the roster list with editable numbers
+        async function renderRosterList() {
+            const players = await loadRoster();
+            rosterList.innerHTML = ''; // Clear existing list
+            
+            // Function to generate the dropdown options (1-20)
+            const generateNumberOptions = (selectedNumber) => {
+                let optionsHtml = '';
+                for (let i = 1; i <= 20; i++) {
+                    optionsHtml += `<option value="${i}" ${i === selectedNumber ? 'selected' : ''}>#${i}</option>`;
+                }
+                return optionsHtml;
+            };
+
+            if (players.length > 0) {
+                players.forEach(player => {
+                    const listItem = document.createElement('li');
+                    listItem.className = "flex items-center justify-between p-3 bg-white rounded-lg shadow-sm border border-gray-100";
+                    listItem.innerHTML = `
+                        <span class="text-lg font-medium text-gray-900">${player.name}</span>
+                        <select
+                            class="player-number-select text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                            data-id="${player.id}">
+                            ${generateNumberOptions(player.number)}
+                        </select>
+                    `;
+                    rosterList.appendChild(listItem);
+                });
+            } else {
+                const emptyMessage = document.createElement('li');
+                emptyMessage.className = "text-center text-gray-500 italic p-4";
+                emptyMessage.textContent = "No players on the roster yet. Add one above!";
+                rosterList.appendChild(emptyMessage);
+            }
+        }
+
+        // Event listener for the roster list container to handle number changes
+        rosterList.addEventListener('change', (event) => {
+            const target = event.target;
+            if (target.classList.contains('player-number-select')) {
+                const playerId = parseInt(target.dataset.id);
+                const newNumber = parseInt(target.value, 10);
+                
+                if (!isNaN(newNumber) && newNumber > 0) {
+                    updatePlayerNumber(playerId, newNumber);
+                } else {
+                    displayMessage('Please enter a positive number.', 'error');
+                    // Reset the input value to the old value if invalid
+                    loadRoster().then(players => {
+                        const player = players.find(p => p.id === playerId);
+                        if (player) {
+                            target.value = player.number;
+                        }
+                    });
+                }
+            }
+        });
+
+        // --- Game Template Logic ---
+        const QUARTERS = ['1', '2', '3', '4'];
+        const POSITIONS = ['Left Striker', 'Right Striker', 'Attacking MF', 'Sweeper', 'Left Back', 'Right Back', 'Goalkeeper'];
+
+        // Function to get a map of player IDs to the number of quarters they were on the bench for a specific game
+        function getBenchQuarterCounts(gameId, allPlayers) {
+            const benchCounts = {};
+            const onFieldCounts = {};
+            
+            // Initialize all players' counts to 0 for this game
+            allPlayers.forEach(player => {
+                benchCounts[player.id] = 0;
+                onFieldCounts[player.id] = 0;
+            });
+            
+            // If the game has no lineups yet, all players are on the bench all four quarters
+            if (!gameLineups[gameId]) {
+                return allPlayers.reduce((acc, player) => {
+                    acc[player.id] = 4;
+                    return acc;
+                }, {});
+            }
+
+            QUARTERS.forEach(quarterNum => {
+                const lineup = gameLineups[gameId][`q${quarterNum}`] || {};
+                const onFieldPlayerIds = Object.values(lineup).filter(id => id !== '');
+                
+                allPlayers.forEach(player => {
+                    if (onFieldPlayerIds.includes(player.id)) {
+                        onFieldCounts[player.id]++;
+                    }
+                });
+            });
+
+            allPlayers.forEach(player => {
+                benchCounts[player.id] = 4 - onFieldCounts[player.id];
+            });
+
+            return benchCounts;
+        }
+
+        // Function to render a single quarter's template with the new layout
+        function renderQuarterTemplate(quarterNum, gameId, allPlayers, benchCounts) {
+            const quarterDiv = document.createElement('div');
+            // Added quarter-container class for print styling
+            quarterDiv.className = "bg-gray-50 p-6 rounded-lg shadow-inner flex flex-col space-y-4 quarter-container";
+            
+            const selectedPlayers = Object.values(gameLineups[gameId][`q${quarterNum}`] || {});
+            const playersOnBench = allPlayers.filter(p => !selectedPlayers.includes(p.id));
+            
+            let htmlContent = `
+                <!-- Changed h3 to span and added quarter-title class for print styling -->
+                <span class="text-xl font-bold text-gray-700 quarter-title">Quarter ${quarterNum}</span>
+                <div class="space-y-4">
+            `;
+
+            const currentQuarterPlayers = gameLineups[gameId][`q${quarterNum}`] || {};
+            
+            // --- Strikers (Row) ---
+            htmlContent += `
+                <div class="flex flex-row space-x-4">
+                    <!-- Left Striker -->
+                    <div class="flex-1 flex flex-col space-y-2">
+                        <!-- Added quarter-label class for print styling -->
+                        <label class="font-semibold text-center quarter-label ${currentQuarterPlayers['Left Striker'] ? 'text-gray-600' : 'text-red-600'}" data-game-id="${gameId}" data-quarter="${quarterNum}" data-position="Left Striker">Left Striker</label>
+                        <!-- Added quarter-select class for print styling -->
+                        <select id="${gameId}-q${quarterNum}-ls-select" data-game-id="${gameId}" data-quarter="${quarterNum}" data-position="Left Striker" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-sm quarter-select">
+                            <option value="">Select a player</option>
+            `;
+            allPlayers.forEach(player => {
+                const isSelected = currentQuarterPlayers['Left Striker'] === player.id;
+                // Added the jersey number back to the dropdown options, but without the "#" sign
+                htmlContent += `<option value="${player.id}" ${isSelected ? 'selected' : ''}>${player.number} - ${player.name}</option>`;
+            });
+            htmlContent += `
+                        </select>
+                    </div>
+                    <!-- Right Striker -->
+                    <div class="flex-1 flex flex-col space-y-2">
+                        <!-- Added quarter-label class for print styling -->
+                        <label class="font-semibold text-center quarter-label ${currentQuarterPlayers['Right Striker'] ? 'text-gray-600' : 'text-red-600'}" data-game-id="${gameId}" data-quarter="${quarterNum}" data-position="Right Striker">Right Striker</label>
+                        <!-- Added quarter-select class for print styling -->
+                        <select id="${gameId}-q${quarterNum}-rs-select" data-game-id="${gameId}" data-quarter="${quarterNum}" data-position="Right Striker" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-sm quarter-select">
+                            <option value="">Select a player</option>
+            `;
+            allPlayers.forEach(player => {
+                const isSelected = currentQuarterPlayers['Right Striker'] === player.id;
+                // Added the jersey number back to the dropdown options, but without the "#" sign
+                htmlContent += `<option value="${player.id}" ${isSelected ? 'selected' : ''}>${player.number} - ${player.name}</option>`;
+            });
+            htmlContent += `
+                        </select>
+                    </div>
+                </div>
+            `;
+            
+            <!-- Attacking MF and Sweeper (Row with "stairstep" effect) -->
+            htmlContent += `
+                <div class="flex flex-row space-x-4 items-end">
+                    <!-- Attacking MF (higher position) -->
+                    <div class="flex-1 flex flex-col space-y-2 mb-4">
+                        <label class="font-semibold text-center quarter-label ${currentQuarterPlayers['Attacking MF'] ? 'text-gray-600' : 'text-red-600'}" data-game-id="${gameId}" data-quarter="${quarterNum}" data-position="Attacking MF">Attacking MF</label>
+                        <select id="${gameId}-q${quarterNum}-amf-select" data-game-id="${gameId}" data-quarter="${quarterNum}" data-position="Attacking MF" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-sm quarter-select">
+                            <option value="">Select a player</option>
+            `;
+            allPlayers.forEach(player => {
+                const isSelected = currentQuarterPlayers['Attacking MF'] === player.id;
+                // Added the jersey number back to the dropdown options, but without the "#" sign
+                htmlContent += `<option value="${player.id}" ${isSelected ? 'selected' : ''}>${player.number} - ${player.name}</option>`;
+            });
+            htmlContent += `
+                        </select>
+                    </div>
+                    <!-- Sweeper (lower position) -->
+                    <div class="flex-1 flex flex-col space-y-2 mt-4">
+                        <label class="font-semibold text-center quarter-label ${currentQuarterPlayers['Sweeper'] ? 'text-gray-600' : 'text-red-600'}" data-game-id="${gameId}" data-quarter="${quarterNum}" data-position="Sweeper">Sweeper</label>
+                        <select id="${gameId}-q${quarterNum}-sweeper-select" data-game-id="${gameId}" data-quarter="${quarterNum}" data-position="Sweeper" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-sm quarter-select">
+                            <option value="">Select a player</option>
+            `;
+            allPlayers.forEach(player => {
+                const isSelected = currentQuarterPlayers['Sweeper'] === player.id;
+                // Added the jersey number back to the dropdown options, but without the "#" sign
+                htmlContent += `<option value="${player.id}" ${isSelected ? 'selected' : ''}>${player.number} - ${player.name}</option>`;
+            });
+            htmlContent += `
+                        </select>
+                    </div>
+                </div>
+            `;
+            
+            <!-- Left and Right Backs (Row) -->
+            htmlContent += `
+                <div class="flex flex-row space-x-4">
+                    <!-- Left Back -->
+                    <div class="flex-1 flex flex-col space-y-2">
+                        <!-- Added quarter-label class for print styling -->
+                        <label class="font-semibold text-center quarter-label ${currentQuarterPlayers['Left Back'] ? 'text-gray-600' : 'text-red-600'}" data-game-id="${gameId}" data-quarter="${quarterNum}" data-position="Left Back">Left Back</label>
+                        <!-- Added quarter-select class for print styling -->
+                        <select id="${gameId}-q${quarterNum}-lb-select" data-game-id="${gameId}" data-quarter="${quarterNum}" data-position="Left Back" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-sm quarter-select">
+                            <option value="">Select a player</option>
+            `;
+            allPlayers.forEach(player => {
+                const isSelected = currentQuarterPlayers['Left Back'] === player.id;
+                // Added the jersey number back to the dropdown options, but without the "#" sign
+                htmlContent += `<option value="${player.id}" ${isSelected ? 'selected' : ''}>${player.number} - ${player.name}</option>`;
+            });
+            htmlContent += `
+                        </select>
+                    </div>
+                    <!-- Right Back -->
+                    <div class="flex-1 flex flex-col space-y-2">
+                        <!-- Added quarter-label class for print styling -->
+                        <label class="font-semibold text-center quarter-label ${currentQuarterPlayers['Right Back'] ? 'text-gray-600' : 'text-red-600'}" data-game-id="${gameId}" data-quarter="${quarterNum}" data-position="Right Back">Right Back</label>
+                        <!-- Added quarter-select class for print styling -->
+                        <select id="${gameId}-q${quarterNum}-rb-select" data-game-id="${gameId}" data-quarter="${quarterNum}" data-position="Right Back" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-sm quarter-select">
+                            <option value="">Select a player</option>
+            `;
+            allPlayers.forEach(player => {
+                const isSelected = currentQuarterPlayers['Right Back'] === player.id;
+                // Added the jersey number back to the dropdown options, but without the "#" sign
+                htmlContent += `<option value="${player.id}" ${isSelected ? 'selected' : ''}>${player.number} - ${player.name}</option>`;
+            });
+            htmlContent += `
+                        </select>
+                    </div>
+                </div>
+            `;
+
+            <!-- Goalkeeper (50% width, centered) -->
+            htmlContent += `
+                <div class="w-full sm:w-1/2 mx-auto">
+                    <div class="flex flex-col space-y-2">
+                        <!-- Added quarter-label class for print styling -->
+                        <label class="font-semibold text-center quarter-label ${currentQuarterPlayers['Goalkeeper'] ? 'text-gray-600' : 'text-red-600'}" data-game-id="${gameId}" data-quarter="${quarterNum}" data-position="Goalkeeper">Goalkeeper</label>
+                        <!-- Added quarter-select class for print styling -->
+                        <select id="${gameId}-q${quarterNum}-gk-select" data-game-id="${gameId}" data-quarter="${quarterNum}" data-position="Goalkeeper" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-sm quarter-select">
+                            <option value="">Select a player</option>
+            `;
+            allPlayers.forEach(player => {
+                const isSelected = currentQuarterPlayers['Goalkeeper'] === player.id;
+                // Added the jersey number back to the dropdown options, but without the "#" sign
+                htmlContent += `<option value="${player.id}" ${isSelected ? 'selected' : ''}>${player.number} - ${player.name}</option>`;
+            });
+            htmlContent += `
+                        </select>
+                    </div>
+                </div>
+            `;
+            
+            const benchPlayerNamesHtml = playersOnBench
+                .sort((a,b) => a.name.localeCompare(b.name))
+                .map(p => {
+                    const benchTime = benchCounts[p.id] || 0;
+                    if (benchTime >= 3) {
+                        return `<span class="font-bold text-red-700">${p.name}</span>`;
+                    }
+                    return p.name;
+                })
+                .join(', ');
+            
+            const benchListHtml = benchPlayerNamesHtml.length > 0 ? benchPlayerNamesHtml : 'All players are in position.';
+
+            htmlContent += `
+                </div>
+                <!-- Changed bench container and title for single-line display -->
+                <div class="mt-6 pt-4 border-t border-gray-300 bench-container">
+                    <h4 class="text-lg font-bold text-gray-700 mb-0 mr-2 bench-title">Bench:</h4>
+                    <p id="${gameId}-q${quarterNum}-bench" class="text-gray-600 break-words flex-1">
+                        ${benchListHtml}
+                    </p>
+                </div>
+            `;
+            
+            quarterDiv.innerHTML = htmlContent;
+            return quarterDiv;
+        }
+
+        // Function to update dropdowns and bench across all quarters for a specific game
+        async function updateAllQuartersUI(gameId) {
+            const allPlayers = await loadRoster();
+            const benchCounts = getBenchQuarterCounts(gameId, allPlayers);
+
+            QUARTERS.forEach(quarterNum => {
+                const selectedPlayers = Object.values(gameLineups[gameId][`q${quarterNum}`] || {});
+                const playersOnBench = allPlayers.filter(p => !selectedPlayers.includes(p.id));
+
+                // Update the bench paragraph with a comma-separated string of names only
+                const benchElement = document.getElementById(`${gameId}-q${quarterNum}-bench`);
+                if (benchElement) {
+                    const benchPlayerNamesHtml = playersOnBench
+                        .sort((a,b) => a.name.localeCompare(b.name))
+                        .map(p => {
+                            const benchTime = benchCounts[p.id] || 0;
+                            if (benchTime >= 3) {
+                                return `<span class="font-bold text-red-700">${p.name}</span>`;
+                            }
+                            return p.name;
+                        })
+                        .join(', ');
+                    benchElement.innerHTML = benchPlayerNamesHtml.length > 0 ? benchPlayerNamesHtml : 'All players are in position.';
+                }
+
+                // Update dropdowns and labels
+                const positionMap = {
+                    'Left Striker': 'ls-select',
+                    'Right Striker': 'rs-select',
+                    'Attacking MF': 'amf-select',
+                    'Left Back': 'lb-select',
+                    'Right Back': 'rb-select',
+                    'Sweeper': 'sweeper-select',
+                    'Goalkeeper': 'gk-select'
+                };
+
+                POSITIONS.forEach(position => {
+                    const select = document.getElementById(`${gameId}-q${quarterNum}-${positionMap[position]}`);
+                    if (select) {
+                        const currentPlayerId = gameLineups[gameId][`q${quarterNum}`][position];
+                        // Get the corresponding label
+                        const label = document.querySelector(`label[data-game-id="${gameId}"][data-quarter="${quarterNum}"][data-position="${position}"]`);
+                        if (label) {
+                            if (currentPlayerId) {
+                                label.classList.remove('text-red-600');
+                                label.classList.add('text-gray-600');
+                            } else {
+                                label.classList.remove('text-gray-600');
+                                label.classList.add('text-red-600');
+                            }
+                        }
+                        // Re-create the options for the dropdown
+                        select.innerHTML = '<option value="">Select a player</option>';
+                        allPlayers.forEach(player => {
+                            const isSelected = currentPlayerId === player.id;
+                            // Added the jersey number back to the dropdown options, but without the "#" sign
+                            select.innerHTML += `<option value="${player.id}" ${isSelected ? 'selected' : ''}>${player.number} - ${player.name}</option>`;
+                        });
+                    }
+                });
+            });
+        }
+        
+        // --- NEW: Copy from previous functionality ---
+        async function copyPreviousLineup(currentGameId) {
+            const gameNumber = parseInt(currentGameId.split('-')[1]);
+            if (gameNumber <= 1) {
+                displayMessage("There is no previous game to copy from.", "error");
+                return;
+            }
+
+            const previousGameId = `game-${gameNumber - 1}`;
+            const previousLineupDoc = await getLineupFromDB(previousGameId);
+            
+            if (previousLineupDoc && previousLineupDoc.lineup) {
+                // Found a valid lineup to copy
+                gameLineups[currentGameId] = previousLineupDoc.lineup;
+                
+                // Save the newly copied lineup
+                await saveLineupToDB(currentGameId, gameLineups[currentGameId]);
+                
+                // Update the UI to reflect the changes
+                await renderGameTab(currentGameId);
+                displayMessage(`Lineup copied from Game ${gameNumber - 1} successfully!`, 'success');
+            } else {
+                displayMessage(`No lineup found for Game ${gameNumber - 1}.`, "error");
+            }
+        }
+
+        // Main function to render the game template for a specific game ID
+        async function renderGameTab(gameId) {
+            const allPlayers = await loadRoster();
+            const gameContainer = document.getElementById(`${gameId}-container`);
+            
+            // Check if the container has already been rendered to prevent re-rendering on every click
+            if (gameContainer.children.length > 0) {
+                updateAllQuartersUI(gameId);
+                return;
+            }
+
+            if (allPlayers.length === 0) {
+                gameContainer.innerHTML = `<p class="text-center text-gray-500 italic p-4">Please add players to the roster tab first.</p>`;
+                return;
+            }
+
+            // Load the lineup from the database first
+            const savedLineupDoc = await getLineupFromDB(gameId);
+            if (savedLineupDoc) {
+                // If a lineup exists, load it into our in-memory cache
+                gameLineups[gameId] = savedLineupDoc.lineup;
+            } else {
+                // If not, initialize a blank lineup for this game
+                gameLineups[gameId] = {};
+            }
+            
+            gameContainer.innerHTML = '';
+            
+            const benchCounts = getBenchQuarterCounts(gameId, allPlayers);
+            QUARTERS.forEach(quarterNum => {
+                gameLineups[gameId][`q${quarterNum}`] = gameLineups[gameId][`q${quarterNum}`] || {};
+                const quarterDiv = renderQuarterTemplate(quarterNum, gameId, allPlayers, benchCounts);
+                gameContainer.appendChild(quarterDiv);
+            });
+            
+            // Add event listeners for the dropdowns
+            const allSelects = gameContainer.querySelectorAll('select');
+            allSelects.forEach(select => {
+                select.addEventListener('change', (event) => {
+                    const newPlayerId = parseInt(event.target.value);
+                    const quarter = event.target.dataset.quarter;
+                    const newPosition = event.target.dataset.position;
+                    const currentId = event.target.dataset.gameId;
+
+                    // Check if the newly selected player is already in a different position in this quarter
+                    for (const pos of POSITIONS) {
+                        if (gameLineups[currentId][`q${quarter}`][pos] === newPlayerId) {
+                            // Found a match, so clear the old position
+                            gameLineups[currentId][`q${quarter}`][pos] = "";
+                            const oldSelect = document.querySelector(`select[data-game-id="${currentId}"][data-quarter="${quarter}"][data-position="${pos}"]`);
+                            if (oldSelect) {
+                                oldSelect.value = "";
+                            }
+                        }
+                    }
+
+                    // Update the lineup for this quarter with the new selection
+                    gameLineups[currentId][`q${quarter}`][newPosition] = newPlayerId;
+                    
+                    // Call the new, optimized function to update the UI
+                    updateAllQuartersUI(currentId);
+                    
+                    // NEW: Save the updated lineup to the database
+                    saveLineupToDB(currentId, gameLineups[currentId]);
+                });
+            });
+        }
+        
+        // --- NEW: Stats Tab Logic ---
+        async function renderStatsTable() {
+            const allPlayers = await loadRoster();
+            const statsTableBody = document.getElementById('stats-table-body');
+            statsTableBody.innerHTML = ''; // Clear existing rows
+
+            // Fetch all game lineups from the database
+            const transaction = db.transaction([OBJECT_STORE_NAME_LINEUPS], 'readonly');
+            const store = transaction.objectStore(OBJECT_STORE_NAME_LINEUPS);
+            const allLineups = await new Promise((resolve, reject) => {
+                const data = [];
+                store.openCursor().onsuccess = event => {
+                    const cursor = event.target.result;
+                    if (cursor) {
+                        data.push(cursor.value.lineup);
+                        cursor.continue();
+                    } else {
+                        resolve(data);
+                    }
+                };
+                store.openCursor().onerror = event => reject(event.target.error);
+            });
+
+            // Initialize stats object for each player
+            const playerStats = {};
+            allPlayers.forEach(player => {
+                playerStats[player.id] = {
+                    name: player.name,
+                    id: player.id,
+                    forward: 0,
+                    mid: 0,
+                    defense: 0,
+                    goal: 0
+                };
+            });
+
+            // Calculate stats from all game lineups
+            allLineups.forEach(gameLineup => {
+                QUARTERS.forEach(quarterNum => {
+                    const lineup = gameLineup[`q${quarterNum}`] || {};
+                    for (const position in lineup) {
+                        const playerId = lineup[position];
+                        if (playerId && playerStats[playerId]) {
+                            const posType = getPositionType(position);
+                            if (posType) {
+                                playerStats[playerId][posType]++;
+                            }
+                        }
+                    }
+                });
+            });
+            
+            // Calculate total number of "full" games for utilization calculation
+            let totalFullGames = 0;
+            allLineups.forEach(gameLineup => {
+                const hasPlayersInAllQuarters = QUARTERS.every(q => {
+                    const quarterLineup = gameLineup[`q${q}`];
+                    // Check if the quarter lineup exists and has at least one player assigned
+                    return quarterLineup && Object.values(quarterLineup).some(id => id !== '');
+                });
+                if (hasPlayersInAllQuarters) {
+                    totalFullGames++;
+                }
+            });
+
+            function getPositionType(position) {
+                if (position === 'Left Striker' || position === 'Right Striker') {
+                    return 'forward';
+                }
+                if (position === 'Attacking MF' || position === 'Sweeper') {
+                    return 'mid';
+                }
+                if (position === 'Left Back' || position === 'Right Back') {
+                    return 'defense';
+                }
+                if (position === 'Goalkeeper') {
+                    return 'goal';
+                }
+                return null;
+            }
+
+            const sortedPlayers = allPlayers.sort((a,b) => a.name.localeCompare(b.name));
+            
+            // Check if there's any game data at all before rendering the table
+            const hasData = Object.values(playerStats).some(stat => stat.forward > 0 || stat.mid > 0 || stat.defense > 0 || stat.goal > 0);
+
+            if (hasData) {
+                sortedPlayers.forEach(player => {
+                    const stats = playerStats[player.id];
+                    const totalQuartersPlayed = stats.forward + stats.mid + stats.defense + stats.goal;
+                    
+                    // The new utilization calculation
+                    const utilization = (totalFullGames > 0) 
+                        ? (totalQuartersPlayed / (QUARTERS.length * totalFullGames)) * 100 
+                        : 0;
+                    
+                    const row = document.createElement('tr');
+                    row.className = 'bg-white hover:bg-gray-100 transition-colors duration-200 text-sm';
+                    row.innerHTML = `
+                        <td class="p-4 text-left font-medium text-gray-800">${stats.name}</td>
+                        <td class="p-4 text-center font-bold text-base text-blue-600">${utilization.toFixed(0)}%</td>
+                        <td class="p-4 text-center text-gray-700">${stats.forward}</td>
+                        <td class="p-4 text-center text-gray-700">${stats.mid}</td>
+                        <td class="p-4 text-center text-gray-700">${stats.defense}</td>
+                        <td class="p-4 text-center text-gray-700">${stats.goal}</td>
+                    `;
+                    statsTableBody.appendChild(row);
+                });
+            } else {
+                 statsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="p-4 text-center text-gray-500 italic">
+                            No game data available.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // --- NEW: Data Management Functions ---
+
+        // Function to export all data from the database to a JSON file
+        async function exportData() {
+            try {
+                if (!db) {
+                    displayMessage('Database not ready.', 'error');
+                    return;
+                }
+
+                const transaction = db.transaction([OBJECT_STORE_NAME_ROSTER, OBJECT_STORE_NAME_LINEUPS], 'readonly');
+                const rosterStore = transaction.objectStore(OBJECT_STORE_NAME_ROSTER);
+                const lineupsStore = transaction.objectStore(OBJECT_STORE_NAME_LINEUPS);
+
+                const exportData = {};
+
+                // Fetch roster data
+                const rosterData = await new Promise((resolve, reject) => {
+                    const data = [];
+                    const cursorRequest = rosterStore.openCursor();
+                    cursorRequest.onsuccess = event => {
+                        const cursor = event.target.result;
+                        if (cursor) {
+                            data.push(cursor.value);
+                            cursor.continue();
+                        } else {
+                            resolve(data);
+                        }
+                    };
+                    cursorRequest.onerror = event => reject(event.target.error);
+                });
+                exportData.roster = rosterData;
+
+                // Fetch lineups data
+                const lineupsData = await new Promise((resolve, reject) => {
+                    const data = [];
+                    const cursorRequest = lineupsStore.openCursor();
+                    cursorRequest.onsuccess = event => {
+                        const cursor = event.target.result;
+                        if (cursor) {
+                            data.push(cursor.value);
+                            cursor.continue();
+                        } else {
+                            resolve(data);
+                        }
+                    };
+                    cursorRequest.onerror = event => reject(event.target.error);
+                });
+                exportData.lineups = lineupsData;
+
+                // Create a Blob and trigger download
+                const jsonString = JSON.stringify(exportData, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'silver_six_seven_data.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                displayMessage('Data exported successfully!', 'success');
+
+            } catch (error) {
+                console.error('Export failed:', error);
+                displayMessage('Failed to export data.', 'error');
+            }
+        }
+
+        // Function to import data from a JSON file
+        async function importData(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            try {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (!data.roster || !data.lineups) {
+                            throw new Error('Invalid file format. Roster and lineups data not found.');
+                        }
+
+                        if (!db) {
+                            displayMessage('Database not ready.', 'error');
+                            return;
+                        }
+
+                        // Clear existing data
+                        const clearTransaction = db.transaction([OBJECT_STORE_NAME_ROSTER, OBJECT_STORE_NAME_LINEUPS], 'readwrite');
+                        await new Promise((resolve, reject) => {
+                           const req1 = clearTransaction.objectStore(OBJECT_STORE_NAME_ROSTER).clear();
+                           req1.onsuccess = () => {};
+                           req1.onerror = (event) => reject(event.target.error);
+
+                           const req2 = clearTransaction.objectStore(OBJECT_STORE_NAME_LINEUPS).clear();
+                           req2.onsuccess = () => {};
+                           req2.onerror = (event) => reject(event.target.error);
+
+                           clearTransaction.oncomplete = resolve;
+                           clearTransaction.onerror = (event) => reject(event.target.error);
+                        });
+
+                        // Add new data
+                        const addTransaction = db.transaction([OBJECT_STORE_NAME_ROSTER, OBJECT_STORE_NAME_LINEUPS], 'readwrite');
+                        const rosterStore = addTransaction.objectStore(OBJECT_STORE_NAME_ROSTER);
+                        const lineupsStore = addTransaction.objectStore(OBJECT_STORE_NAME_LINEUPS);
+
+                        data.roster.forEach(player => rosterStore.add(player));
+                        data.lineups.forEach(lineup => lineupsStore.add(lineup));
+
+                        await new Promise(resolve => addTransaction.oncomplete = resolve);
+                        
+                        // Clear the in-memory cache and re-render
+                        gameLineups = {};
+                        renderRosterList();
+                        displayMessage('Data imported successfully!', 'success');
+                    } catch (parseError) {
+                        console.error('Import failed:', parseError);
+                        displayMessage('Failed to import data. Please check the file format.', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            } catch (error) {
+                console.error('Import process failed:', error);
+                displayMessage('An unexpected error occurred during import.', 'error');
+            }
+        }
+
+        // Function to reset all data
+        async function resetData() {
+            if (!db) {
+                displayMessage('Database not ready.', 'error');
+                return;
+            }
+
+            try {
+                const transaction = db.transaction([OBJECT_STORE_NAME_ROSTER, OBJECT_STORE_NAME_LINEUPS], 'readwrite');
+                await new Promise((resolve, reject) => {
+                    const req1 = transaction.objectStore(OBJECT_STORE_NAME_ROSTER).clear();
+                    req1.onsuccess = () => {};
+                    req1.onerror = (event) => reject(event.target.error);
+
+                    const req2 = transaction.objectStore(OBJECT_STORE_NAME_LINEUPS).clear();
+                    req2.onsuccess = () => {};
+                    req2.onerror = (event) => reject(event.target.error);
+
+                    transaction.oncomplete = resolve;
+                    transaction.onerror = (event) => reject(event.target.error);
+                });
+                
+                // Clear the in-memory cache and re-render
+                gameLineups = {};
+                renderRosterList();
+                displayMessage('All data has been reset.', 'success');
+            } catch (error) {
+                console.error('Reset failed:', error);
+                displayMessage('Failed to reset data.', 'error');
+            }
+        }
+
+        // Function to display messages (custom message box)
+        function displayMessage(message, type) {
+            const messageBox = document.createElement('div');
+            messageBox.textContent = message;
+            messageBox.className = `fixed bottom-4 left-1/2 -translate-x-1/2 p-4 rounded-lg shadow-lg z-50 text-white transition-opacity duration-300`;
+            if (type === 'success') {
+                messageBox.classList.add('bg-green-500');
+            } else if (type === 'error') {
+                messageBox.classList.add('bg-red-500');
+            }
+
+            document.body.appendChild(messageBox);
+
+            setTimeout(() => {
+                messageBox.classList.add('opacity-0');
+                setTimeout(() => messageBox.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize the database and load the roster when the page loads
+        window.onload = async function() {
+            try {
+                await openDB();
+                const playerCount = await getPlayerCount();
+                if (playerCount === 0) {
+                    await initializeRoster();
+                }
+                renderRosterList();
+            } catch (e) {
+                console.error(e);
+                displayMessage('Failed to initialize database.', 'error');
+            }
+            
+            // Get the last active tab from local storage, or default to 'roster'
+            const lastActiveTab = localStorage.getItem('activeTab') || 'roster';
+            const initialTabButton = document.querySelector(`[data-tab="${lastActiveTab}"]`);
+            if (initialTabButton) {
+                initialTabButton.click();
+            }
+        };
+        
+        // Add event listener for the import file input
+        document.getElementById('importFile').addEventListener('change', importData);
+    </script>
+</body>
+</html>
