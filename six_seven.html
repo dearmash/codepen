@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Silver Six Seven Soccer Team</title>
+    <title>Silver Six Seven</title>
     <!-- Inter font from Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -451,41 +451,47 @@
         // This is the in-memory cache of the data from IndexedDB
         let gameLineups = {};
 
-        // Add a click event listener to each button
-        tabButtons.forEach(button => {
-            button.addEventListener('click', async () => {
-                const tabId = button.dataset.tab;
-                
-                // Save the selected tab to local storage
-                localStorage.setItem('activeTab', tabId);
+        // Function to handle tab selection logic
+        async function selectTab(tabId) {
+            // Save the selected tab to local storage
+            localStorage.setItem('activeTab', tabId);
 
-                // Reset all tab buttons to inactive state
-                tabButtons.forEach(btn => {
-                    btn.classList.remove('active-tab', 'bg-white', 'text-gray-800', 'shadow-lg');
-                    btn.classList.add('bg-gray-300', 'text-gray-800', 'hover:bg-gray-400');
-                });
-                // Set the clicked button to active state
+            // Reset all tab buttons to inactive state
+            tabButtons.forEach(btn => {
+                btn.classList.remove('active-tab', 'bg-white', 'text-gray-800', 'shadow-lg');
+                btn.classList.add('bg-gray-300', 'text-gray-800', 'hover:bg-gray-400');
+            });
+            // Set the clicked button to active state
+            const button = document.querySelector(`[data-tab="${tabId}"]`);
+            if (button) {
                 button.classList.add('active-tab', 'bg-white', 'text-gray-800', 'shadow-lg');
                 button.classList.remove('bg-gray-300', 'text-gray-800', 'hover:bg-gray-400');
-                
-                // Hide all tab content
-                tabContents.forEach(content => {
-                    content.classList.add('hidden');
-                });
-                // Show the content corresponding to the clicked tab
-                const contentToShow = document.getElementById(`${tabId}-content`);
-                if (contentToShow) {
-                    contentToShow.classList.remove('hidden');
-                }
+            }
+            
+            // Hide all tab content
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+            });
+            // Show the content corresponding to the clicked tab
+            const contentToShow = document.getElementById(`${tabId}-content`);
+            if (contentToShow) {
+                contentToShow.classList.remove('hidden');
+            }
 
-                // If a game tab is clicked, render the lineup template for that game
-                if (tabId.startsWith('game-')) {
-                    // This is an async call to load data first
-                    await renderGameTab(tabId);
-                } else if (tabId === 'stats') {
-                    // If the stats tab is clicked, render the stats table
-                    await renderStatsTable();
-                }
+            // If a game tab is clicked, render the lineup template for that game
+            if (tabId.startsWith('game-')) {
+                // This is an async call to load data first
+                await renderGameTab(tabId);
+            } else if (tabId === 'stats') {
+                // If the stats tab is clicked, render the stats table
+                await renderStatsTable();
+            }
+        }
+        
+        // Add a click event listener to each button
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                selectTab(button.dataset.tab);
             });
         });
 
@@ -586,7 +592,7 @@
         // Function to populate the roster with a predefined list of players
         async function initializeRoster() {
             const initialPlayers = [
-                "Alan D", "Auden G", "Christian H", "Cillian C", "Cooper G", "Ethan T", "Henry G", "JC M", "Owen A-H", "Owen R", "Randy S", "Teddy W", "Vaughn J"
+                "Alan", "Auden", "Christian", "Cillian", "Cooper", "Ethan", "Henry", "JC", "Owen A", "Owen R", "Randy", "Teddy", "Vaughn"
             ];
 
             try {
@@ -704,7 +710,7 @@
             const generateNumberOptions = (selectedNumber) => {
                 let optionsHtml = '';
                 for (let i = 1; i <= 20; i++) {
-                    optionsHtml += `<option value="${i}" ${i === selectedNumber ? 'selected' : ''}>#${i}</option>`;
+                    optionsHtml += `<option value="${i}" ${i === selectedNumber ? 'selected' : ''}>${i}</option>`;
                 }
                 return optionsHtml;
             };
@@ -777,6 +783,7 @@
             }
 
             QUARTERS.forEach(quarterNum => {
+                // IMPORTANT: Check if the quarter lineup exists to avoid the undefined error
                 const lineup = gameLineups[gameId][`q${quarterNum}`] || {};
                 const onFieldPlayerIds = Object.values(lineup).filter(id => id !== '');
                 
@@ -973,10 +980,14 @@
         // Function to update dropdowns and bench across all quarters for a specific game
         async function updateAllQuartersUI(gameId) {
             const allPlayers = await loadRoster();
+            // This function relies on gameLineups[gameId] to be populated.
+            // It will be called by `renderGameTab` which ensures the data is loaded.
             const benchCounts = getBenchQuarterCounts(gameId, allPlayers);
 
             QUARTERS.forEach(quarterNum => {
-                const selectedPlayers = Object.values(gameLineups[gameId][`q${quarterNum}`] || {});
+                // Ensure quarter data exists before accessing it
+                const quarterData = gameLineups[gameId][`q${quarterNum}`] || {};
+                const selectedPlayers = Object.values(quarterData);
                 const playersOnBench = allPlayers.filter(p => !selectedPlayers.includes(p.id));
 
                 // Update the bench paragraph with a comma-separated string of names only
@@ -1009,7 +1020,7 @@
                 POSITIONS.forEach(position => {
                     const select = document.getElementById(`${gameId}-q${quarterNum}-${positionMap[position]}`);
                     if (select) {
-                        const currentPlayerId = gameLineups[gameId][`q${quarterNum}`][position];
+                        const currentPlayerId = quarterData[position];
                         // Get the corresponding label
                         const label = document.querySelector(`label[data-game-id="${gameId}"][data-quarter="${quarterNum}"][data-position="${position}"]`);
                         if (label) {
@@ -1064,12 +1075,6 @@
             const allPlayers = await loadRoster();
             const gameContainer = document.getElementById(`${gameId}-container`);
             
-            // Check if the container has already been rendered to prevent re-rendering on every click
-            if (gameContainer.children.length > 0) {
-                updateAllQuartersUI(gameId);
-                return;
-            }
-
             if (allPlayers.length === 0) {
                 gameContainer.innerHTML = `<p class="text-center text-gray-500 italic p-4">Please add players to the roster tab first.</p>`;
                 return;
@@ -1085,6 +1090,7 @@
                 gameLineups[gameId] = {};
             }
             
+            // Re-render the entire game board every time to ensure consistency
             gameContainer.innerHTML = '';
             
             const benchCounts = getBenchQuarterCounts(gameId, allPlayers);
@@ -1105,7 +1111,8 @@
 
                     // Check if the newly selected player is already in a different position in this quarter
                     for (const pos of POSITIONS) {
-                        if (gameLineups[currentId][`q${quarter}`][pos] === newPlayerId) {
+                        // IMPORTANT: Added check for gameLineups[currentId] and gameLineups[currentId][`q${quarter}`]
+                        if (gameLineups[currentId] && gameLineups[currentId][`q${quarter}`] && gameLineups[currentId][`q${quarter}`][pos] === newPlayerId) {
                             // Found a match, so clear the old position
                             gameLineups[currentId][`q${quarter}`][pos] = "";
                             const oldSelect = document.querySelector(`select[data-game-id="${currentId}"][data-quarter="${quarter}"][data-position="${pos}"]`);
@@ -1365,6 +1372,11 @@
                         gameLineups = {};
                         renderRosterList();
                         displayMessage('Data imported successfully!', 'success');
+
+                        // Re-select the current tab to refresh the view with the new data
+                        const currentTab = localStorage.getItem('activeTab') || 'roster';
+                        selectTab(currentTab);
+
                     } catch (parseError) {
                         console.error('Import failed:', parseError);
                         displayMessage('Failed to import data. Please check the file format.', 'error');
@@ -1444,10 +1456,8 @@
             
             // Get the last active tab from local storage, or default to 'roster'
             const lastActiveTab = localStorage.getItem('activeTab') || 'roster';
-            const initialTabButton = document.querySelector(`[data-tab="${lastActiveTab}"]`);
-            if (initialTabButton) {
-                initialTabButton.click();
-            }
+            // Use the new selectTab function to properly handle the initial render
+            selectTab(lastActiveTab);
         };
         
         // Add event listener for the import file input
@@ -1455,3 +1465,4 @@
     </script>
 </body>
 </html>
+
