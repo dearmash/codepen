@@ -319,13 +319,24 @@
             </div>
             <!-- Game 1 Tab Content -->
             <div id="game-1-content" class="tab-content hidden">
-                <!-- New print button added here -->
-                <div class="w-full flex justify-center mb-6 no-print">
+                <div class="w-full flex justify-center mb-6 space-x-4 no-print">
+                    <select onchange="handleLineupCopy(event)" data-current-game="game-1" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 cursor-pointer appearance-none text-center">
+                        <option value="" disabled selected>Copy from Game</option>
+                        <option value="game-1">Game 1</option>
+                        <option value="game-2">Game 2</option>
+                        <option value="game-3">Game 3</option>
+                        <option value="game-4">Game 4</option>
+                        <option value="game-5">Game 5</option>
+                        <option value="game-6">Game 6</option>
+                        <option value="game-7">Game 7</option>
+                        <option value="game-8">Game 8</option>
+                        <option value="game-9">Game 9</option>
+                        <option value="game-10">Game 10</option>
+                    </select>
                     <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
                         Print Lineup
                     </button>
                 </div>
-                <!-- Game 1 container with responsive grid layout -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6" id="game-1-container">
                     <!-- Quarter sections will be dynamically added here -->
                 </div>
@@ -333,9 +344,19 @@
             <!-- Game 2 Tab Content -->
             <div id="game-2-content" class="tab-content hidden">
                 <div class="w-full flex justify-center mb-6 space-x-4 no-print">
-                    <button onclick="copyPreviousLineup('game-2')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
-                        Copy from Previous
-                    </button>
+                    <select onchange="handleLineupCopy(event)" data-current-game="game-2" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 cursor-pointer appearance-none text-center">
+                        <option value="" disabled selected>Copy from Game</option>
+                        <option value="game-1">Game 1</option>
+                        <option value="game-2">Game 2</option>
+                        <option value="game-3">Game 3</option>
+                        <option value="game-4">Game 4</option>
+                        <option value="game-5">Game 5</option>
+                        <option value="game-6">Game 6</option>
+                        <option value="game-7">Game 7</option>
+                        <option value="game-8">Game 8</option>
+                        <option value="game-9">Game 9</option>
+                        <option value="game-10">Game 10</option>
+                    </select>
                     <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
                         Print Lineup
                     </button>
@@ -345,9 +366,19 @@
             <!-- Game 3 Tab Content -->
             <div id="game-3-content" class="tab-content hidden">
                 <div class="w-full flex justify-center mb-6 space-x-4 no-print">
-                    <button onclick="copyPreviousLineup('game-3')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
-                        Copy from Previous
-                    </button>
+                    <select onchange="handleLineupCopy(event)" data-current-game="game-3" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 cursor-pointer appearance-none text-center">
+                        <option value="" disabled selected>Copy from Game</option>
+                        <option value="game-1">Game 1</option>
+                        <option value="game-2">Game 2</option>
+                        <option value="game-3">Game 3</option>
+                        <option value="game-4">Game 4</option>
+                        <option value="game-5">Game 5</option>
+                        <option value="game-6">Game 6</option>
+                        <option value="game-7">Game 7</option>
+                        <option value="game-8">Game 8</option>
+                        <option value="game-9">Game 9</option>
+                        <option value="game-10">Game 10</option>
+                    </select>
                     <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
                         Print Lineup
                     </button>
@@ -357,9 +388,19 @@
             <!-- Game 4 Tab Content -->
             <div id="game-4-content" class="tab-content hidden">
                 <div class="w-full flex justify-center mb-6 space-x-4 no-print">
-                    <button onclick="copyPreviousLineup('game-4')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
-                        Copy from Previous
-                    </button>
+                    <select onchange="handleLineupCopy(event)" data-current-game="game-4" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 cursor-pointer appearance-none text-center">
+                        <option value="" disabled selected>Copy from Game</option>
+                        <option value="game-1">Game 1</option>
+                        <option value="game-2">Game 2</option>
+                        <option value="game-3">Game 3</option>
+                        <option value="game-4">Game 4</option>
+                        <option value="game-5">Game 5</option>
+                        <option value="game-6">Game 6</option>
+                        <option value="game-7">Game 7</option>
+                        <option value="game-8">Game 8</option>
+                        <option value="game-9">Game 9</option>
+                        <option value="game-10">Game 10</option>
+                    </select>
                     <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
                         Print Lineup
                     </button>
@@ -369,9 +410,19 @@
             <!-- Game 5 Tab Content -->
             <div id="game-5-content" class="tab-content hidden">
                 <div class="w-full flex justify-center mb-6 space-x-4 no-print">
-                    <button onclick="copyPreviousLineup('game-5')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
-                        Copy from Previous
-                    </button>
+                    <select onchange="handleLineupCopy(event)" data-current-game="game-5" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 cursor-pointer appearance-none text-center">
+                        <option value="" disabled selected>Copy from Game</option>
+                        <option value="game-1">Game 1</option>
+                        <option value="game-2">Game 2</option>
+                        <option value="game-3">Game 3</option>
+                        <option value="game-4">Game 4</option>
+                        <option value="game-5">Game 5</option>
+                        <option value="game-6">Game 6</option>
+                        <option value="game-7">Game 7</option>
+                        <option value="game-8">Game 8</option>
+                        <option value="game-9">Game 9</option>
+                        <option value="game-10">Game 10</option>
+                    </select>
                     <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
                         Print Lineup
                     </button>
@@ -381,9 +432,19 @@
             <!-- Game 6 Tab Content -->
             <div id="game-6-content" class="tab-content hidden">
                 <div class="w-full flex justify-center mb-6 space-x-4 no-print">
-                    <button onclick="copyPreviousLineup('game-6')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
-                        Copy from Previous
-                    </button>
+                    <select onchange="handleLineupCopy(event)" data-current-game="game-6" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 cursor-pointer appearance-none text-center">
+                        <option value="" disabled selected>Copy from Game</option>
+                        <option value="game-1">Game 1</option>
+                        <option value="game-2">Game 2</option>
+                        <option value="game-3">Game 3</option>
+                        <option value="game-4">Game 4</option>
+                        <option value="game-5">Game 5</option>
+                        <option value="game-6">Game 6</option>
+                        <option value="game-7">Game 7</option>
+                        <option value="game-8">Game 8</option>
+                        <option value="game-9">Game 9</option>
+                        <option value="game-10">Game 10</option>
+                    </select>
                     <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
                         Print Lineup
                     </button>
@@ -393,9 +454,19 @@
             <!-- Game 7 Tab Content -->
             <div id="game-7-content" class="tab-content hidden">
                 <div class="w-full flex justify-center mb-6 space-x-4 no-print">
-                    <button onclick="copyPreviousLineup('game-7')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
-                        Copy from Previous
-                    </button>
+                    <select onchange="handleLineupCopy(event)" data-current-game="game-7" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 cursor-pointer appearance-none text-center">
+                        <option value="" disabled selected>Copy from Game</option>
+                        <option value="game-1">Game 1</option>
+                        <option value="game-2">Game 2</option>
+                        <option value="game-3">Game 3</option>
+                        <option value="game-4">Game 4</option>
+                        <option value="game-5">Game 5</option>
+                        <option value="game-6">Game 6</option>
+                        <option value="game-7">Game 7</option>
+                        <option value="game-8">Game 8</option>
+                        <option value="game-9">Game 9</option>
+                        <option value="game-10">Game 10</option>
+                    </select>
                     <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
                         Print Lineup
                     </button>
@@ -405,9 +476,19 @@
             <!-- Game 8 Tab Content -->
             <div id="game-8-content" class="tab-content hidden">
                 <div class="w-full flex justify-center mb-6 space-x-4 no-print">
-                    <button onclick="copyPreviousLineup('game-8')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
-                        Copy from Previous
-                    </button>
+                    <select onchange="handleLineupCopy(event)" data-current-game="game-8" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 cursor-pointer appearance-none text-center">
+                        <option value="" disabled selected>Copy from Game</option>
+                        <option value="game-1">Game 1</option>
+                        <option value="game-2">Game 2</option>
+                        <option value="game-3">Game 3</option>
+                        <option value="game-4">Game 4</option>
+                        <option value="game-5">Game 5</option>
+                        <option value="game-6">Game 6</option>
+                        <option value="game-7">Game 7</option>
+                        <option value="game-8">Game 8</option>
+                        <option value="game-9">Game 9</option>
+                        <option value="game-10">Game 10</option>
+                    </select>
                     <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
                         Print Lineup
                     </button>
@@ -417,9 +498,19 @@
             <!-- Game 9 Tab Content -->
             <div id="game-9-content" class="tab-content hidden">
                 <div class="w-full flex justify-center mb-6 space-x-4 no-print">
-                    <button onclick="copyPreviousLineup('game-9')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
-                        Copy from Previous
-                    </button>
+                    <select onchange="handleLineupCopy(event)" data-current-game="game-9" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 cursor-pointer appearance-none text-center">
+                        <option value="" disabled selected>Copy from Game</option>
+                        <option value="game-1">Game 1</option>
+                        <option value="game-2">Game 2</option>
+                        <option value="game-3">Game 3</option>
+                        <option value="game-4">Game 4</option>
+                        <option value="game-5">Game 5</option>
+                        <option value="game-6">Game 6</option>
+                        <option value="game-7">Game 7</option>
+                        <option value="game-8">Game 8</option>
+                        <option value="game-9">Game 9</option>
+                        <option value="game-10">Game 10</option>
+                    </select>
                     <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
                         Print Lineup
                     </button>
@@ -429,9 +520,19 @@
             <!-- Game 10 Tab Content -->
             <div id="game-10-content" class="tab-content hidden">
                 <div class="w-full flex justify-center mb-6 space-x-4 no-print">
-                    <button onclick="copyPreviousLineup('game-10')" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
-                        Copy from Previous
-                    </button>
+                    <select onchange="handleLineupCopy(event)" data-current-game="game-10" class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 cursor-pointer appearance-none text-center">
+                        <option value="" disabled selected>Copy from Game</option>
+                        <option value="game-1">Game 1</option>
+                        <option value="game-2">Game 2</option>
+                        <option value="game-3">Game 3</option>
+                        <option value="game-4">Game 4</option>
+                        <option value="game-5">Game 5</option>
+                        <option value="game-6">Game 6</option>
+                        <option value="game-7">Game 7</option>
+                        <option value="game-8">Game 8</option>
+                        <option value="game-9">Game 9</option>
+                        <option value="game-10">Game 10</option>
+                    </select>
                     <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
                         Print Lineup
                     </button>
@@ -1044,30 +1145,36 @@
             });
         }
         
-        // --- NEW: Copy from previous functionality ---
-        async function copyPreviousLineup(currentGameId) {
-            const gameNumber = parseInt(currentGameId.split('-')[1]);
-            if (gameNumber <= 1) {
-                displayMessage("There is no previous game to copy from.", "error");
-                return;
-            }
+        // --- NEW: Copy from selected game functionality ---
+        async function handleLineupCopy(event) {
+            const selectElement = event.target;
+            const sourceGameId = selectElement.value;
+            const currentGameId = selectElement.dataset.currentGame;
 
-            const previousGameId = `game-${gameNumber - 1}`;
-            const previousLineupDoc = await getLineupFromDB(previousGameId);
+            if (!sourceGameId) {
+                return; // Do nothing if the default option is re-selected
+            }
             
-            if (previousLineupDoc && previousLineupDoc.lineup) {
-                // Found a valid lineup to copy
-                gameLineups[currentGameId] = previousLineupDoc.lineup;
+            const sourceGameNumber = sourceGameId.split('-')[1];
+            
+            const sourceLineupDoc = await getLineupFromDB(sourceGameId);
+            
+            if (sourceLineupDoc && sourceLineupDoc.lineup) {
+                // Deep copy the lineup to avoid reference issues
+                gameLineups[currentGameId] = JSON.parse(JSON.stringify(sourceLineupDoc.lineup));
                 
                 // Save the newly copied lineup
                 await saveLineupToDB(currentGameId, gameLineups[currentGameId]);
                 
                 // Update the UI to reflect the changes
                 await renderGameTab(currentGameId);
-                displayMessage(`Lineup copied from Game ${gameNumber - 1} successfully!`, 'success');
+                displayMessage(`Lineup copied from Game ${sourceGameNumber} successfully!`, 'success');
             } else {
-                displayMessage(`No lineup found for Game ${gameNumber - 1}.`, "error");
+                displayMessage(`No lineup found for Game ${sourceGameNumber}.`, "error");
             }
+            
+            // Reset the dropdown to the default option
+            selectElement.selectedIndex = 0;
         }
 
         // Main function to render the game template for a specific game ID
@@ -1101,18 +1208,17 @@
             });
             
             // Add event listeners for the dropdowns
-            const allSelects = gameContainer.querySelectorAll('select');
+            const allSelects = gameContainer.querySelectorAll('select.quarter-select');
             allSelects.forEach(select => {
                 select.addEventListener('change', (event) => {
-                    const newPlayerId = parseInt(event.target.value);
+                    const newPlayerId = isNaN(parseInt(event.target.value)) ? "" : parseInt(event.target.value);
                     const quarter = event.target.dataset.quarter;
                     const newPosition = event.target.dataset.position;
                     const currentId = event.target.dataset.gameId;
 
                     // Check if the newly selected player is already in a different position in this quarter
                     for (const pos of POSITIONS) {
-                        // IMPORTANT: Added check for gameLineups[currentId] and gameLineups[currentId][`q${quarter}`]
-                        if (gameLineups[currentId] && gameLineups[currentId][`q${quarter}`] && gameLineups[currentId][`q${quarter}`][pos] === newPlayerId) {
+                        if (newPlayerId && gameLineups[currentId] && gameLineups[currentId][`q${quarter}`] && gameLineups[currentId][`q${quarter}`][pos] === newPlayerId) {
                             // Found a match, so clear the old position
                             gameLineups[currentId][`q${quarter}`][pos] = "";
                             const oldSelect = document.querySelector(`select[data-game-id="${currentId}"][data-quarter="${quarter}"][data-position="${pos}"]`);
@@ -1309,7 +1415,15 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'silver_six_seven_data.json';
+
+                // Get current date and format it for the filename
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+                const day = String(today.getDate()).padStart(2, '0');
+                const dateString = `${year}${month}${day}`;
+                
+                a.download = `silver_six_seven_data_${dateString}.json`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -1346,16 +1460,16 @@
                         // Clear existing data
                         const clearTransaction = db.transaction([OBJECT_STORE_NAME_ROSTER, OBJECT_STORE_NAME_LINEUPS], 'readwrite');
                         await new Promise((resolve, reject) => {
-                           const req1 = clearTransaction.objectStore(OBJECT_STORE_NAME_ROSTER).clear();
-                           req1.onsuccess = () => {};
-                           req1.onerror = (event) => reject(event.target.error);
+                            const req1 = clearTransaction.objectStore(OBJECT_STORE_NAME_ROSTER).clear();
+                            req1.onsuccess = () => {};
+                            req1.onerror = (event) => reject(event.target.error);
 
-                           const req2 = clearTransaction.objectStore(OBJECT_STORE_NAME_LINEUPS).clear();
-                           req2.onsuccess = () => {};
-                           req2.onerror = (event) => reject(event.target.error);
+                            const req2 = clearTransaction.objectStore(OBJECT_STORE_NAME_LINEUPS).clear();
+                            req2.onsuccess = () => {};
+                            req2.onerror = (event) => reject(event.target.error);
 
-                           clearTransaction.oncomplete = resolve;
-                           clearTransaction.onerror = (event) => reject(event.target.error);
+                            clearTransaction.oncomplete = resolve;
+                            clearTransaction.onerror = (event) => reject(event.target.error);
                         });
 
                         // Add new data
@@ -1465,4 +1579,3 @@
     </script>
 </body>
 </html>
-
