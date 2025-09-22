@@ -1,0 +1,16 @@
+{
+  "name": "Clock",
+  "short_name": "Clock",
+  "icons": [{
+    "src": "clock.png",
+      "sizes": "240x240",
+      "type": "image/png"
+    }],
+  "lang": "en-US",
+  "start_url": "clock.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation":"portrait"
+}
+

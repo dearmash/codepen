@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clock</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for the 'Inter' font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Flex:wght@100..1000&display=swap" rel="stylesheet">
+    <link rel="manifest" href="plus.json">  
+    <style>
+        /* Using the Inter font family for UI and Roboto Flex for the timer */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212; /* A slightly softer black */
+        }
+        #time-display {
+            font-family: 'Roboto Flex', monospace;
+            /* Smooth transition for font weight and color */
+            transition: color 0.4s ease-in-out, font-weight 0.4s ease-in-out;
+        }
+        /* Custom button colors to match the screenshots */
+        /* Initial & Paused "Start" Button */
+        .btn-start-initial {
+            background-color: #AECBFA; /* Light blue color from screenshot */
+            color: #121212; /* Dark text for contrast */
+        }
+        .btn-start-initial:hover {
+            background-color: #C1D7FC;
+        }
+        /* Stop Button */
+        .btn-stop {
+            background-color: #D16464; /* Red color for stop button */
+            color: white;
+        }
+        .btn-stop:hover {
+            background-color: #E07D7D;
+        }
+        /* Secondary buttons (Reset/Lap) */
+        .btn-secondary {
+            background-color: #2C2C2E;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #3A3A3C;
+        }
+        .active-icon-bg {
+             background-color: #0D2F4F;
+        }
+        .active-icon-text {
+            color: #61A5FA;
+        }
+        /* New styles for the Timer numpad */
+        .btn-numpad {
+            background-color: #2C2C2E;
+            color: white;
+            width: 100px; /* Increased from 80px */
+            height: 100px; /* Increased from 80px */
+            border-radius: 9999px; /* Full circle */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.25rem; /* text-4xl */
+            transition: background-color 0.2s;
+        }
+        .btn-numpad:hover {
+            background-color: #3A3A3C;
+        }
+        /* Style for the disabled play button */
+        .btn-play-disabled {
+            background-color: #3A3A3C !important;
+            cursor: not-allowed;
+        }
+        .btn-play-disabled svg {
+            fill: #757575;
+            stroke: #757575;
+        }
+    </style>
+</head>
+<body class="bg-[#121212] text-gray-200 flex flex-col h-screen">
+
+    <!-- Header Section -->
+    <header class="flex justify-between items-center p-6">
+        <h1 id="page-title" class="text-xl font-medium">Timers</h1>
+        <!-- Menu Icon (three dots) -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+            <circle cx="12" cy="12" r="1"></circle>
+            <circle cx="12" cy="5" r="1"></circle>
+            <circle cx="12" cy="19" r="1"></circle>
+        </svg>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex flex-col overflow-y-auto">
+        <!-- Stopwatch Page Content -->
+        <div id="stopwatch-page" class="page-content hidden flex-grow flex-col">
+            <!-- Top Half: Time Display -->
+            <div class="h-1/2 flex justify-center items-end pb-10">
+                <div id="time-display" class="text-7xl md:text-8xl font-thin text-gray-400 tracking-wider">
+                    <span id="minutes">00</span>:<span id="seconds">00</span><span class="text-6xl md:text-7xl">.<span id="milliseconds">00</span></span>
+                </div>
+            </div>
+            <!-- Bottom Half: Buttons -->
+            <div class="h-1/2 flex flex-col justify-start items-center pt-10">
+                <div class="w-full max-w-xs md:max-w-sm flex flex-col items-center space-y-4">
+                    <button id="start-stop-button" class="btn-start-initial rounded-full text-lg font-semibold w-full h-32 transition-all duration-300">
+                        Start
+                    </button>
+                    <!-- Using 'invisible' instead of 'hidden' to preserve layout space -->
+                    <button id="reset-button" class="btn-secondary rounded-full text-lg font-semibold w-full h-16 transition-opacity duration-300 invisible">
+                        Reset
+                    </button>
+                    <button id="lap-button" class="btn-secondary rounded-full text-lg font-semibold w-full h-16 transition-opacity duration-300 invisible">
+                        Lap
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Placeholder Pages -->
+        <div id="alarms-page" class="page-content hidden flex-grow justify-center items-center"></div>
+        <div id="world-clock-page" class="page-content hidden flex-grow justify-center items-center"></div>
+        
+        <!-- Timers Page Content -->
+        <div id="timers-page" class="page-content flex flex-col justify-center items-center p-4 space-y-12">
+            <!-- Timer Display -->
+            <div class="text-6xl tracking-wider text-center">
+                <span id="timer-hours" class="text-gray-400 transition-colors">00</span><span class="text-3xl text-gray-500">h</span>
+                <span id="timer-minutes" class="mx-2 text-gray-400 transition-colors">00</span><span class="text-3xl text-gray-500">m</span>
+                <span id="timer-seconds" class="text-gray-400 transition-colors">00</span><span class="text-3xl text-gray-500">s</span>
+            </div>
+            <!-- Numpad and Play Button Container -->
+            <div class="flex flex-col items-center space-y-8">
+                <!-- Numpad -->
+                <div id="numpad" class="grid grid-cols-3 gap-4">
+                    <button class="btn-numpad" data-value="1">1</button>
+                    <button class="btn-numpad" data-value="2">2</button>
+                    <button class="btn-numpad" data-value="3">3</button>
+                    <button class="btn-numpad" data-value="4">4</button>
+                    <button class="btn-numpad" data-value="5">5</button>
+                    <button class="btn-numpad" data-value="6">6</button>
+                    <button class="btn-numpad" data-value="7">7</button>
+                    <button class="btn-numpad" data-value="8">8</button>
+                    <button class="btn-numpad" data-value="9">9</button>
+                    <button class="btn-numpad text-2xl" data-value="00">00</button>
+                    <button class="btn-numpad" data-value="0">0</button>
+                    <button class="btn-numpad" data-value="backspace">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
+                    </button>
+                </div>
+                <!-- Play Button -->
+                <div>
+                    <button id="timer-play-button" class="bg-[#AECBFA] rounded-full w-[100px] h-[100px] flex justify-center items-center transition-colors btn-play-disabled" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#121212" stroke="#121212" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="bedtime-page" class="page-content hidden flex-grow justify-center items-center"></div>
+    </main>
+
+    <!-- Static Footer Navigation -->
+    <footer class="w-full bg-[#1C1C1E] py-2">
+        <div class="flex justify-around items-start text-center text-xs text-gray-400">
+            <!-- Alarms -->
+            <div id="alarms-nav" class="nav-item flex flex-col items-center space-y-1 cursor-pointer" data-page="alarms">
+                <div class="icon-wrapper w-16 h-8 rounded-full flex justify-center items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <span>Alarms</span>
+            </div>
+            <!-- World Clock -->
+            <div id="world-clock-nav" class="nav-item flex flex-col items-center space-y-1 cursor-pointer" data-page="world-clock">
+                <div class="icon-wrapper w-16 h-8 rounded-full flex justify-center items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                </div>
+                <span>World Clock</span>
+            </div>
+            <!-- Timers -->
+            <div id="timers-nav" class="nav-item flex flex-col items-center space-y-1 cursor-pointer active-icon-text" data-page="timers">
+                <div class="icon-wrapper w-16 h-8 rounded-full flex justify-center items-center active-icon-bg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7h-2a5 5 0 0 1-5 5z"></path><path d="M12 2h.01"></path><path d="M22 12a10 10 0 0 0-10-10v2a8 8 0 0 1 8 8z"></path><path d="M12 12H2.01"></path><path d="M2.29 5.23a10 10 0 0 0 1.42 2.18l1.41-1.41A8 8 0 0 1 3.7 4.31z"></path></svg>
+                </div>
+                <span>Timers</span>
+            </div>
+            <!-- Stopwatch (Active by default) -->
+            <div id="stopwatch-nav" class="nav-item flex flex-col items-center space-y-1 cursor-pointer" data-page="stopwatch">
+                <div class="icon-wrapper w-16 h-8 rounded-full flex justify-center items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 7.5 15"></polyline></svg>
+                </div>
+                <span>Stopwatch</span>
+            </div>
+            <!-- Bedtime -->
+            <div id="bedtime-nav" class="nav-item flex flex-col items-center space-y-1 cursor-pointer" data-page="bedtime">
+                <div class="icon-wrapper w-16 h-8 rounded-full flex justify-center items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </div>
+                <span>Bedtime</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- PAGE NAVIGATION ---
+        const pageTitle = document.getElementById('page-title');
+        const navItems = document.querySelectorAll('.nav-item');
+        const pageContents = document.querySelectorAll('.page-content');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const pageId = item.dataset.page;
+
+                // Secret feature: If stopwatch tab is clicked while already active, deactivate secret mode
+                if (pageId === 'stopwatch' && item.classList.contains('active-icon-text')) {
+                    secretModeActive = false;
+                    console.log("Secret mode deactivated by re-selecting stopwatch tab.");
+                    return; // Exit without changing the page
+                }
+
+                // Update Page Content Visibility
+                pageContents.forEach(content => {
+                    if (content.id === `${pageId}-page`) {
+                        content.classList.remove('hidden');
+                    } else {
+                        content.classList.add('hidden');
+                    }
+                });
+
+                // Update Nav Item Styles
+                navItems.forEach(nav => {
+                    nav.classList.remove('active-icon-text');
+                    nav.querySelector('.icon-wrapper').classList.remove('active-icon-bg');
+                });
+                item.classList.add('active-icon-text');
+                item.querySelector('.icon-wrapper').classList.add('active-icon-bg');
+
+                // Update Page Title
+                let titleText = pageId.replace('-', ' ');
+                if (titleText === 'world clock') titleText = 'World Clock';
+                else titleText = titleText.charAt(0).toUpperCase() + titleText.slice(1);
+                pageTitle.textContent = titleText;
+            });
+        });
+
+
+        // --- STOPWATCH LOGIC ---
+        // DOM Elements
+        const timeDisplay = document.getElementById('time-display');
+        const minutesEl = document.getElementById('minutes');
+        const secondsEl = document.getElementById('seconds');
+        const millisecondsEl = document.getElementById('milliseconds');
+        const startStopButton = document.getElementById('start-stop-button');
+        const lapButton = document.getElementById('lap-button');
+        const resetButton = document.getElementById('reset-button');
+
+        // Stopwatch state variables
+        let tInterval;
+        let savedTime = 0;
+        let running = false;
+        let secretModeActive = false;
+
+        function startStopwatch() {
+            if (!running) {
+                // Start or resume the stopwatch
+                const startTime = new Date().getTime() - savedTime;
+                tInterval = setInterval(() => updateTime(startTime), 10); // Update every 10ms
+                running = true;
+                updateUIForRunning();
+            } else {
+                // Pause the stopwatch - this is where the new logic goes
+                if (secretModeActive && secretNumber !== null) {
+                    const currentMs = Math.floor((savedTime % 1000) / 10);
+                    const primaryTarget = parseInt(secretNumber, 10);
+                    
+                    // Define all potential valid targets
+                    const potentialTargets = [primaryTarget, 53 - primaryTarget]
+                        .filter(t => !isNaN(t) && t >= 1 && t <= 52);
+
+                    let bestHit = null;
+
+                    // 1. Find the best "hit" action (the one with the shortest wait time)
+                    for (const targetMs of potentialTargets) {
+                        // New: Check for "snap back" window (up to 5ms after). This is highest priority.
+                        if (currentMs > targetMs && currentMs <= targetMs + 5) {
+                            bestHit = { target: targetMs, waitTime: 0 };
+                            break; // Found an immediate snap-back, no need to check other targets.
+                        }
+                        
+                        // Existing "snap forward" logic
+                        const diffToTarget = (targetMs - currentMs + 100) % 100;
+                        if ((currentMs < targetMs) || (diffToTarget <= 25)) {
+                            const waitTime = diffToTarget * 10;
+                            if (bestHit === null || waitTime < bestHit.waitTime) {
+                                bestHit = { target: targetMs, waitTime: waitTime };
+                            }
+                        }
+                    }
+
+                    // If we found a hit, execute it and we're done.
+                    if (bestHit !== null) {
+                        setTimeout(() => {
+                            clearInterval(tInterval);
+                            running = false;
+                            millisecondsEl.textContent = String(bestHit.target).padStart(2, '0');
+                            updateUIForPaused();
+                        }, bestHit.waitTime);
+                        return; // Stop execution here
+                    }
+
+                    // 2. If no hit, check if we should "delay"
+                    const shouldDelay = potentialTargets.some(t => currentMs > t && currentMs <= 52);
+                    if (shouldDelay) {
+                        const randomStopTarget = Math.floor(Math.random() * 8) + 53; // 53-60
+                        const diffToRandom = (randomStopTarget - currentMs + 100) % 100;
+                        const timeToWait = diffToRandom * 10;
+                        setTimeout(() => {
+                            clearInterval(tInterval);
+                            running = false;
+                            millisecondsEl.textContent = String(randomStopTarget).padStart(2, '0');
+                            updateUIForPaused();
+                        }, timeToWait);
+                        return; // Stop execution here
+                    }
+                }
+                
+                // 3. Default stop behavior if no secret actions are triggered
+                clearInterval(tInterval);
+                running = false;
+                updateUIForPaused();
+            }
+        }
+
+        function resetStopwatch() {
+            clearInterval(tInterval);
+            savedTime = 0;
+            running = false;
+            minutesEl.textContent = '00';
+            secondsEl.textContent = '00';
+            millisecondsEl.textContent = '00';
+
+            // Activate secret mode for the next run if a secret number exists
+            if (secretNumber !== null) {
+                secretModeActive = true;
+                console.log("Secret mode is now active.");
+            }
+            
+            updateUIForReset();
+        }
+
+        function updateTime(startTime) {
+            if (!running) return; // Prevent updates after timer has been stopped.
+            const updatedTime = new Date().getTime();
+            const difference = updatedTime - startTime;
+            savedTime = difference; // Keep track of the elapsed time
+
+            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+            const milliseconds = Math.floor((difference % 1000) / 10);
+
+            minutesEl.textContent = String(minutes).padStart(2, '0');
+            secondsEl.textContent = String(seconds).padStart(2, '0');
+            millisecondsEl.textContent = String(milliseconds).padStart(2, '0');
+        }
+
+        function updateUIForRunning() {
+            // Change time display style to be bright and bold
+            timeDisplay.classList.remove('font-thin', 'text-gray-400');
+            timeDisplay.classList.add('font-normal', 'text-white');
+
+            // Change start button to stop button
+            startStopButton.textContent = 'Stop';
+            startStopButton.classList.remove('btn-start-initial', 'rounded-full');
+            startStopButton.classList.add('btn-stop', 'rounded-3xl'); // Apply less rounded corners
+
+            // Show lap and reset buttons
+            lapButton.classList.remove('invisible');
+            resetButton.classList.remove('invisible');
+        }
+
+        function updateUIForPaused() {
+            // Mute the time display color but keep it bold
+            timeDisplay.classList.remove('text-white');
+            timeDisplay.classList.add('text-gray-400');
+
+            // Change stop button back to start, with paused styling
+            startStopButton.textContent = 'Start';
+            startStopButton.classList.remove('btn-stop', 'rounded-3xl');
+            startStopButton.classList.add('btn-start-initial', 'rounded-full'); // Revert to full corners
+
+            // Hide lap button
+            lapButton.classList.add('invisible');
+        }
+
+        function updateUIForReset() {
+            // Reset time display style completely
+            timeDisplay.classList.add('font-thin', 'text-gray-400');
+            timeDisplay.classList.remove('font-normal', 'text-white');
+            
+            // Reset main button to initial state
+            startStopButton.textContent = 'Start';
+            startStopButton.classList.remove('btn-stop', 'rounded-3xl');
+            startStopButton.classList.add('btn-start-initial', 'rounded-full');
+
+            // Hide secondary buttons
+            resetButton.classList.add('invisible');
+            lapButton.classList.add('invisible');
+        }
+
+        // --- Event Listeners ---
+        startStopButton.addEventListener('click', startStopwatch);
+        resetButton.addEventListener('click', resetStopwatch);
+
+        // Placeholder for lap button functionality
+        lapButton.addEventListener('click', () => {
+            console.log("Lap button clicked");
+        });
+
+        // --- TIMERS LOGIC ---
+        const timerHoursEl = document.getElementById('timer-hours');
+        const timerMinutesEl = document.getElementById('timer-minutes');
+        const timerSecondsEl = document.getElementById('timer-seconds');
+        const numpad = document.getElementById('numpad');
+        const timerPlayButton = document.getElementById('timer-play-button');
+        let timerInput = "";
+        let secretNumber = null; // Variable to store the secret number
+
+        function handleNumpadPress(value) {
+            if (value === 'backspace') {
+                timerInput = timerInput.slice(0, -1);
+            } else if (timerInput.length < 6) {
+                timerInput += value;
+            }
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const paddedInput = timerInput.padStart(6, '0');
+            const h = paddedInput.slice(0, 2);
+            const m = paddedInput.slice(2, 4);
+            const s = paddedInput.slice(4, 6);
+
+            timerHoursEl.textContent = h;
+            timerMinutesEl.textContent = m;
+            timerSecondsEl.textContent = s;
+
+            // Update colors based on input length
+            const len = timerInput.length;
+
+            // Seconds segment
+            if (len >= 1) {
+                timerSecondsEl.classList.add('text-white');
+                timerSecondsEl.classList.remove('text-gray-400');
+            } else {
+                timerSecondsEl.classList.remove('text-white');
+                timerSecondsEl.classList.add('text-gray-400');
+            }
+
+            // Minutes segment
+            if (len >= 3) {
+                timerMinutesEl.classList.add('text-white');
+                timerMinutesEl.classList.remove('text-gray-400');
+            } else {
+                timerMinutesEl.classList.remove('text-white');
+                timerMinutesEl.classList.add('text-gray-400');
+            }
+
+            // Hours segment
+            if (len >= 5) {
+                timerHoursEl.classList.add('text-white');
+                timerHoursEl.classList.remove('text-gray-400');
+            } else {
+                timerHoursEl.classList.remove('text-white');
+                timerHoursEl.classList.add('text-gray-400');
+            }
+
+
+            const totalSeconds = parseInt(h) * 3600 + parseInt(m) * 60 + parseInt(s);
+
+            if (totalSeconds > 0) {
+                timerPlayButton.disabled = false;
+                timerPlayButton.classList.remove('btn-play-disabled');
+            } else {
+                timerPlayButton.disabled = true;
+                timerPlayButton.classList.add('btn-play-disabled');
+                // If the timer is at zero, clear the secret number and deactivate secret mode
+                if (secretNumber !== null) {
+                    secretNumber = null;
+                    secretModeActive = false;
+                    console.log("Secret number and secret mode have been cleared.");
+                }
+            }
+        }
+        
+        numpad.addEventListener('click', (e) => {
+            const button = e.target.closest('.btn-numpad');
+            if (button && button.dataset.value) {
+                handleNumpadPress(button.dataset.value);
+            }
+        });
+
+        // Event listener for the timer's play button
+        timerPlayButton.addEventListener('click', () => {
+            if (!timerPlayButton.disabled) {
+                // Capture the seconds value when play is pressed
+                secretNumber = timerSecondsEl.textContent;
+                console.log("Secret number captured:", secretNumber);
+                // Future timer start logic will go here
+            }
+        });
+
+    </script>
+</body>
+</html>
+
+
+
+
