@@ -372,8 +372,8 @@
 
             // Change start button to stop button
             startStopButton.textContent = 'Stop';
-            startStopButton.classList.remove('btn-start-initial', 'rounded-full');
-            startStopButton.classList.add('btn-stop', 'rounded-3xl'); // Apply less rounded corners
+            startStopButton.classList.remove('btn-start-initial');
+            startStopButton.classList.add('btn-stop'); 
 
             // Show lap and reset buttons
             lapButton.classList.remove('invisible');
@@ -387,8 +387,8 @@
 
             // Change stop button back to start, with paused styling
             startStopButton.textContent = 'Start';
-            startStopButton.classList.remove('btn-stop', 'rounded-3xl');
-            startStopButton.classList.add('btn-start-initial', 'rounded-full'); // Revert to full corners
+            startStopButton.classList.remove('btn-stop');
+            startStopButton.classList.add('btn-start-initial'); 
 
             // Hide lap button
             lapButton.classList.add('invisible');
@@ -401,8 +401,8 @@
             
             // Reset main button to initial state
             startStopButton.textContent = 'Start';
-            startStopButton.classList.remove('btn-stop', 'rounded-3xl');
-            startStopButton.classList.add('btn-start-initial', 'rounded-full');
+            startStopButton.classList.remove('btn-stop');
+            startStopButton.classList.add('btn-start-initial');
 
             // Hide secondary buttons
             resetButton.classList.add('invisible');
@@ -514,7 +514,4 @@
     </script>
 </body>
 </html>
-
-
-
 
