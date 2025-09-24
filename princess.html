@@ -27,11 +27,23 @@
             transition: transform 0.2s ease-in-out;
             cursor: pointer;
         }
-        .card-container:hover {
-            transform: scale(1.05);
-        }
         .red { color: #ef4444; } /* Tailwind's red-500 */
         .black { color: #1f2937; } /* Tailwind's gray-800 */
+
+        #start-stop-btn {
+            background-color: #000;
+            border-width: 2px;
+            border-style: solid;
+            color: #4b5563; /* Tailwind's gray-600 */
+        }
+
+        #start-stop-btn.start {
+            border-color: #991b1b; /* Tailwind's red-800 */
+        }
+
+        #start-stop-btn.stop {
+            border-color: #166534; /* Tailwind's green-800 */
+        }
     </style>
 </head>
 <body class="bg-black">
@@ -50,8 +62,11 @@
             </div>
         </div>
         
-        <!-- The new text field -->
-        <input type="text" id="mystery-input" autofocus class="bg-black border-2 border-gray-800 text-gray-800 rounded-md p-2 w-full max-w-[250px]">
+        <!-- The new speech recognition button -->
+        <button id="start-stop-btn" class="start px-4 py-2 rounded-md font-bold w-full max-w-[250px]">Start</button>
+        
+        <!-- Transcription label -->
+        <div id="transcription-label" class="text-sm text-gray-400 text-center px-4"></div>
     </div>
 
     <script>
@@ -82,9 +97,98 @@
             const cardCenterElement = document.getElementById('card-center');
             const rankBottomElement = document.getElementById('rank-bottom');
             const suitBottomElement = document.getElementById('suit-bottom');
-            const inputElement = document.getElementById('mystery-input');
+            const startStopBtn = document.getElementById('start-stop-btn');
+            const transcriptionLabel = document.getElementById('transcription-label');
 
             let currentIndex = -1;
+            let recognition = null;
+            let manualStop = false;
+            let transcriptHistory = [];
+            const historyLimit = 20;
+
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'en-US';
+
+                // Check for SpeechRecognitionGrammarList and webkitSpeechRecognitionGrammarList
+                const SpeechGrammarList =
+                    window.SpeechGrammarList || window.webkitSpeechRecognitionGrammarList
+                if (SpeechGrammarList) {
+                    const grammarList = [];
+                    for (const rank in rankNames) {
+                        for (const suit in suitNames) {
+                            grammarList.push(`${rankNames[rank]} of ${suitNames[suit]}`);
+                            grammarList.push(`${rank.toLowerCase()} of ${suitNames[suit]}`);
+                        }
+                    }
+                    const grammar = `#JSGF V1.0; grammar cards; public <card> = ` + grammarList.join(' | ') + ` ;`;
+                    const speechRecognitionList = new SpeechGrammarList();
+                    speechRecognitionList.addFromString(grammar, 1);
+                    recognition.grammars = speechRecognitionList;
+                }
+
+                recognition.onstart = () => {
+                    startStopBtn.textContent = 'Stop';
+                    startStopBtn.classList.remove('start');
+                    startStopBtn.classList.add('stop');
+                };
+
+                recognition.onend = () => {
+                    if (!manualStop) {
+                        // Restart recognition if it stopped unexpectedly
+                        recognition.start();
+                    } else {
+                        // Reset the flag for the next session
+                        manualStop = false;
+                        startStopBtn.textContent = 'Start';
+                        startStopBtn.classList.remove('stop');
+                        startStopBtn.classList.add('start');
+                        transcriptionLabel.textContent = ''; // Clear label on manual stop
+                    }
+                };
+
+                recognition.onresult = (event) => {
+                    let currentFullTranscript = '';
+                    for (let i = 0; i < event.results.length; i++) {
+                        currentFullTranscript += event.results[i][0].transcript;
+                    }
+
+                    const transcriptString = currentFullTranscript.toLowerCase();
+                    const words = transcriptString.split(' ');
+                    const truncatedWords = words.slice(-9);
+                    const truncatedTranscript = truncatedWords.join(' ');
+                    transcriptionLabel.textContent = truncatedTranscript;
+                    
+                    const nextIndex = (currentIndex + 1) % mnemonicaStack.length;
+                    const nextCardString = mnemonicaStack[nextIndex];
+                    const { rank, suit } = getCardInfo(nextCardString);
+
+                    const rankName = rankNames[rank];
+                    const suitName = suitNames[suit];
+                    
+                    const fullCardName = `${rankName} of ${suitName}`;
+                    const altCardName = `${rank.toLowerCase()} of ${suitName}`;
+                    
+                    if (truncatedTranscript.includes(fullCardName) || truncatedTranscript.includes(altCardName)) {
+                        showNextCard();
+                        transcriptionLabel.textContent = ''; // Clear label on successful match
+                    }
+                };
+                
+                startStopBtn.addEventListener('click', () => {
+                    if (startStopBtn.classList.contains('stop')) {
+                        manualStop = true;
+                        recognition.stop();
+                    } else {
+                        recognition.start();
+                    }
+                });
+            } else {
+                startStopBtn.textContent = 'Speech Recognition Not Supported';
+                startStopBtn.disabled = true;
+            }
 
             function getCardInfo(cardString) {
                 const suit = cardString.slice(-1);
@@ -123,33 +227,6 @@
             
             cardElement.addEventListener('click', () => {
                 showNextCard();
-                inputElement.focus();
-            });
-
-            document.addEventListener('click', (event) => {
-                // If the click is not on the card element or the input field itself, focus the input
-                if (!cardElement.contains(event.target) && event.target !== inputElement) {
-                    inputElement.focus();
-                }
-            });
-
-            // Listen for input to check for card names
-            inputElement.addEventListener('input', () => {
-                const inputValue = inputElement.value.toLowerCase();
-                const nextIndex = (currentIndex + 1) % mnemonicaStack.length;
-                const nextCardString = mnemonicaStack[nextIndex];
-                const { rank, suit } = getCardInfo(nextCardString);
-
-                const rankName = rankNames[rank];
-                const suitName = suitNames[suit];
-                
-                const fullCardName = `${rankName} of ${suitName}`;
-                const altCardName = `${rank.toLowerCase()} of ${suitName}`;
-                
-                // Check if the input value ends with either the full name or the alternate name
-                if (inputValue.endsWith(fullCardName) || inputValue.endsWith(altCardName)) {
-                    showNextCard();
-                }
             });
 
             // Initial load
