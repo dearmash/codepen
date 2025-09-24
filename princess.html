@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Princess</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
+
+        /* Custom styles for the card, ensuring fixed aspect ratio on all devices */
+        .card-container {
+            width: 250px;
+            height: 350px;
+            min-width: 150px;
+            min-height: 210px;
+            max-width: 90vw;
+            max-height: 126vw;
+            transition: transform 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .card-container:hover {
+            transform: scale(1.05);
+        }
+        .red { color: #ef4444; } /* Tailwind's red-500 */
+        .black { color: #1f2937; } /* Tailwind's gray-800 */
+    </style>
+</head>
+<body class="bg-black">
+
+    <div class="flex flex-col items-center justify-center space-y-8 max-w-2xl w-full">
+        <!-- The main card element -->
+        <div id="card" class="card-container bg-white border-2 border-gray-300 rounded-2xl shadow-xl flex flex-col justify-between items-start p-6 text-gray-800 relative">
+            <div id="card-top-left" class="absolute top-4 left-4 text-center">
+                <div id="rank-top" class="text-6xl md:text-7xl font-bold leading-none"></div>
+                <div id="suit-top" class="text-4xl md:text-5xl leading-none"></div>
+            </div>
+            <div id="card-center" class="absolute inset-0 flex items-center justify-center text-8xl font-bold"></div>
+            <div id="card-bottom-right" class="absolute bottom-4 right-4 text-center transform rotate-180">
+                <div id="rank-bottom" class="text-6xl md:text-7xl font-bold leading-none"></div>
+                <div id="suit-bottom" class="text-4xl md:text-5xl leading-none"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mnemonica stack order
+            const mnemonicaStack = [
+                "4♣", "2♥", "7♦", "3♣", "4♥", "6♦", "A♠", "5♥", "9♠", "2♠", "Q♥", "3♦",
+                "Q♣", "8♥", "6♠", "5♠", "9♥", "K♣", "2♦", "J♥", "3♠", "8♠", "6♥", "10♣",
+                "5♦", "K♦", "2♣", "3♠", "8♦", "5♣", "K♠", "J♦", "8♣", "10♠", "K♥", "J♣",
+                "7♠", "10♥", "A♦", "4♠", "7♥", "4♦", "A♣", "9♣", "J♠", "Q♦", "7♣", "Q♠",
+                "10♦", "6♣", "A♥", "9♦"
+            ];
+
+            // Get all the relevant elements
+            const cardElement = document.getElementById('card');
+            const rankTopElement = document.getElementById('rank-top');
+            const suitTopElement = document.getElementById('suit-top');
+            const cardCenterElement = document.getElementById('card-center');
+            const rankBottomElement = document.getElementById('rank-bottom');
+            const suitBottomElement = document.getElementById('suit-bottom');
+
+            let currentIndex = -1;
+
+            function getCardInfo(cardString) {
+                const suit = cardString.slice(-1);
+                const rank = cardString.slice(0, -1);
+                return { rank, suit };
+            }
+
+            function displayCard(cardString) {
+                const { rank, suit } = getCardInfo(cardString);
+                const suitClass = (suit === '♦' || suit === '♥') ? 'red' : 'black';
+
+                // Update all card elements
+                rankTopElement.textContent = rank;
+                suitTopElement.innerHTML = suit;
+                rankBottomElement.textContent = rank;
+                suitBottomElement.innerHTML = suit;
+                cardCenterElement.textContent = suit;
+
+                // Set the suit colors
+                rankTopElement.className = `text-6xl md:text-7xl font-bold leading-none ${suitClass}`;
+                suitTopElement.className = `text-4xl md:text-5xl leading-none ${suitClass}`;
+                rankBottomElement.className = `text-6xl md:text-7xl font-bold leading-none ${suitClass}`;
+                suitBottomElement.className = `text-4xl md:text-5xl leading-none ${suitClass}`;
+                cardCenterElement.className = `absolute inset-0 flex items-center justify-center text-8xl font-bold ${suitClass}`;
+            }
+
+            function showRandomCard() {
+                currentIndex = Math.floor(Math.random() * mnemonicaStack.length);
+                displayCard(mnemonicaStack[currentIndex]);
+            }
+
+            function showNextCard() {
+                currentIndex = (currentIndex + 1) % mnemonicaStack.length;
+                displayCard(mnemonicaStack[currentIndex]);
+            }
+            
+            cardElement.addEventListener('click', () => {
+                showNextCard();
+            });
+
+            // Initial load
+            showRandomCard();
+        });
+    </script>
+</body>
+</html>
