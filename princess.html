@@ -148,12 +148,9 @@
                 const fullCardName = `${rankName} of ${suitName}`;
                 const altCardName = `${rank.toLowerCase()} of ${suitName}`;
                 
-                // Check if the input value includes either the full name or the alternate name
-                if (inputValue.includes(fullCardName) || inputValue.includes(altCardName)) {
+                // Check if the input value ends with either the full name or the alternate name
+                if (inputValue.endsWith(fullCardName) || inputValue.endsWith(altCardName)) {
                     showNextCard();
-                    // Select all the text in the input and delete it
-                    inputElement.select();
-                    document.execCommand('delete');
                 }
             });
 
