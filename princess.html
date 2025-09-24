@@ -51,6 +51,9 @@
                 <div id="suit-bottom" class="text-4xl md:text-5xl leading-none"></div>
             </div>
         </div>
+        
+        <!-- The new text field -->
+        <input type="text" id="mystery-input" autofocus class="bg-black border-2 border-gray-800 text-gray-800 rounded-md p-2 w-full max-w-[250px]">
     </div>
 
     <script>
@@ -63,6 +66,16 @@
                 "7♠", "10♥", "A♦", "4♠", "7♥", "4♦", "A♣", "9♣", "J♠", "Q♦", "7♣", "Q♠",
                 "10♦", "6♣", "A♥", "9♦"
             ];
+            
+            const rankNames = {
+                'A': 'ace', '2': 'two', '3': 'three', '4': 'four', '5': 'five', '6': 'six',
+                '7': 'seven', '8': 'eight', '9': 'nine', '10': 'ten', 'J': 'jack', 'Q': 'queen',
+                'K': 'king'
+            };
+
+            const suitNames = {
+                '♣': 'clubs', '♥': 'hearts', '♦': 'diamonds', '♠': 'spades'
+            };
 
             // Get all the relevant elements
             const cardElement = document.getElementById('card');
@@ -71,6 +84,7 @@
             const cardCenterElement = document.getElementById('card-center');
             const rankBottomElement = document.getElementById('rank-bottom');
             const suitBottomElement = document.getElementById('suit-bottom');
+            const inputElement = document.getElementById('mystery-input');
 
             let currentIndex = -1;
 
@@ -111,6 +125,34 @@
             
             cardElement.addEventListener('click', () => {
                 showNextCard();
+                inputElement.focus();
+            });
+
+            document.addEventListener('click', (event) => {
+                // If the click is not on the card element or the input field itself, focus the input
+                if (!cardElement.contains(event.target) && event.target !== inputElement) {
+                    inputElement.focus();
+                }
+            });
+
+            // Listen for input to check for card names
+            inputElement.addEventListener('input', () => {
+                const inputValue = inputElement.value.toLowerCase();
+                const nextIndex = (currentIndex + 1) % mnemonicaStack.length;
+                const nextCardString = mnemonicaStack[nextIndex];
+                const { rank, suit } = getCardInfo(nextCardString);
+
+                const rankName = rankNames[rank];
+                const suitName = suitNames[suit];
+                
+                const fullCardName = `${rankName} of ${suitName}`;
+                const altCardName = `${rank.toLowerCase()} of ${suitName}`;
+                
+                // Check if the input value includes either the full name or the alternate name
+                if (inputValue.includes(fullCardName) || inputValue.includes(altCardName)) {
+                    showNextCard();
+                    inputElement.value = '';
+                }
             });
 
             // Initial load
