@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Princess</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
+
+        /* Custom styles for the card, ensuring fixed aspect ratio on all devices */
+        .card-container {
+            width: 250px;
+            height: 350px;
+            max-width: 90vw;
+            max-height: 126vw;
+            transition: transform 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .red { color: #ef4444; } /* Tailwind's red-500 */
+        .black { color: #1f2937; } /* Tailwind's gray-800 */
+
+        #start-stop-btn {
+            background-color: #000;
+            border-width: 2px;
+            border-style: solid;
+            color: #4b5563; /* Tailwind's gray-600 */
+        }
+
+        #start-stop-btn.start {
+            border-color: #991b1b; /* Tailwind's red-800 */
+        }
+
+        #start-stop-btn.stop {
+            border-color: #166534; /* Tailwind's green-800 */
+        }
+    </style>
+</head>
+<body class="bg-black">
+
+    <div class="flex flex-col items-center justify-start space-y-8 max-w-2xl w-full">
+        <!-- The main card element -->
+        <div id="card" class="card-container bg-white border-2 border-gray-300 rounded-2xl shadow-xl flex flex-col justify-between items-start p-6 text-gray-800 relative">
+            <div id="card-top-left" class="absolute top-4 left-4 text-center">
+                <div id="rank-top" class="text-6xl md:text-7xl font-bold leading-none"></div>
+                <div id="suit-top" class="text-4xl md:text-5xl leading-none"></div>
+            </div>
+            <div id="card-center" class="absolute inset-0 flex items-center justify-center text-8xl font-bold"></div>
+            <div id="card-bottom-right" class="absolute bottom-4 right-4 text-center transform rotate-180">
+                <div id="rank-bottom" class="text-6xl md:text-7xl font-bold leading-none"></div>
+                <div id="suit-bottom" class="text-4xl md:text-5xl leading-none"></div>
+            </div>
+        </div>
+        
+        <!-- The new speech recognition button -->
+        <button id="start-stop-btn" class="start px-4 py-2 rounded-md font-bold w-full max-w-[250px]">Start</button>
+        
+        <!-- Transcription label -->
+        <div id="transcription-label" class="text-sm text-gray-400 text-center px-4"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mnemonica stack order
+            const mnemonicaStack = [
+                "4♣", "2♥", "7♦", "3♣", "4♥", "6♦", "A♠", "5♥", "9♠", "2♠", "Q♥", "3♦",
+                "Q♣", "8♥", "6♠", "5♠", "9♥", "K♣", "2♦", "J♥", "3♠", "8♠", "6♥", "10♣",
+                "5♦", "K♦", "2♣", "3♥", "8♦", "5♣", "K♠", "J♦", "8♣", "10♠", "K♥", "J♣",
+                "7♠", "10♥", "A♦", "4♠", "7♥", "4♦", "A♣", "9♣", "J♠", "Q♦", "7♣", "Q♠",
+                "10♦", "6♣", "A♥", "9♦"
+            ];
+            
+            const rankNames = {
+                'A': 'ace', '2': 'two', '3': 'three', '4': 'four', '5': 'five', '6': 'six',
+                '7': 'seven', '8': 'eight', '9': 'nine', '10': 'ten', 'J': 'jack', 'Q': 'queen',
+                'K': 'king'
+            };
+
+            const suitNames = {
+                '♣': 'clubs', '♥': 'hearts', '♦': 'diamonds', '♠': 'spades'
+            };
+
+            // Get all the relevant elements
+            const cardElement = document.getElementById('card');
+            const rankTopElement = document.getElementById('rank-top');
+            const suitTopElement = document.getElementById('suit-top');
+            const cardCenterElement = document.getElementById('card-center');
+            const rankBottomElement = document.getElementById('rank-bottom');
+            const suitBottomElement = document.getElementById('suit-bottom');
+            const startStopBtn = document.getElementById('start-stop-btn');
+            const transcriptionLabel = document.getElementById('transcription-label');
+
+            let currentIndex = -1;
+            let recognition = null;
+            let manualStop = false;
+            let transcriptHistory = [];
+            const historyLimit = 20;
+
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'en-US';
+
+                // Check for SpeechRecognitionGrammarList and webkitSpeechRecognitionGrammarList
+                const SpeechGrammarList =
+                    window.SpeechGrammarList || window.webkitSpeechRecognitionGrammarList
+                if (SpeechGrammarList) {
+                    const grammarList = [];
+                    for (const rank in rankNames) {
+                        for (const suit in suitNames) {
+                            grammarList.push(`${rankNames[rank]} of ${suitNames[suit]}`);
+                            grammarList.push(`${rank.toLowerCase()} of ${suitNames[suit]}`);
+                        }
+                    }
+                    const grammar = `#JSGF V1.0; grammar cards; public <card> = ` + grammarList.join(' | ') + ` ;`;
+                    const speechRecognitionList = new SpeechGrammarList();
+                    speechRecognitionList.addFromString(grammar, 1);
+                    recognition.grammars = speechRecognitionList;
+                }
+
+                recognition.onstart = () => {
+                    startStopBtn.textContent = 'Stop';
+                    startStopBtn.classList.remove('start');
+                    startStopBtn.classList.add('stop');
+                };
+
+                recognition.onend = () => {
+                    if (!manualStop) {
+                        // Restart recognition if it stopped unexpectedly
+                        recognition.start();
+                    } else {
+                        // Reset the flag for the next session
+                        manualStop = false;
+                        startStopBtn.textContent = 'Start';
+                        startStopBtn.classList.remove('stop');
+                        startStopBtn.classList.add('start');
+                        transcriptionLabel.textContent = ''; // Clear label on manual stop
+                    }
+                };
+
+                recognition.onresult = (event) => {
+                    let currentFullTranscript = '';
+                    for (let i = 0; i < event.results.length; i++) {
+                        currentFullTranscript += event.results[i][0].transcript;
+                    }
+
+                    const transcriptString = currentFullTranscript.toLowerCase();
+                    const words = transcriptString.split(' ');
+                    const truncatedWords = words.slice(-9);
+                    const truncatedTranscript = truncatedWords.join(' ');
+                    transcriptionLabel.textContent = truncatedTranscript;
+                    
+                    const nextIndex = (currentIndex + 1) % mnemonicaStack.length;
+                    const nextCardString = mnemonicaStack[nextIndex];
+                    const { rank, suit } = getCardInfo(nextCardString);
+
+                    const rankName = rankNames[rank];
+                    const suitName = suitNames[suit];
+                    
+                    const fullCardName = `${rankName} of ${suitName}`;
+                    const altCardName = `${rank.toLowerCase()} of ${suitName}`;
+                    
+                    if (truncatedTranscript.includes(fullCardName) || truncatedTranscript.includes(altCardName)) {
+                        showNextCard();
+                        transcriptionLabel.textContent = ''; // Clear label on successful match
+                    }
+                };
+                
+                startStopBtn.addEventListener('click', () => {
+                    if (startStopBtn.classList.contains('stop')) {
+                        manualStop = true;
+                        recognition.stop();
+                    } else {
+                        recognition.start();
+                    }
+                });
+            } else {
+                startStopBtn.textContent = 'Speech Recognition Not Supported';
+                startStopBtn.disabled = true;
+            }
+
+            function getCardInfo(cardString) {
+                const suit = cardString.slice(-1);
+                const rank = cardString.slice(0, -1);
+                return { rank, suit };
+            }
+
+            function displayCard(cardString) {
+                const { rank, suit } = getCardInfo(cardString);
+                const suitClass = (suit === '♦' || suit === '♥') ? 'red' : 'black';
+
+                // Update all card elements
+                rankTopElement.textContent = rank;
+                suitTopElement.innerHTML = suit;
+                rankBottomElement.textContent = rank;
+                suitBottomElement.innerHTML = suit;
+                cardCenterElement.textContent = suit;
+
+                // Set the suit colors
+                rankTopElement.className = `text-6xl md:text-7xl font-bold leading-none ${suitClass}`;
+                suitTopElement.className = `text-4xl md:text-5xl leading-none ${suitClass}`;
+                rankBottomElement.className = `text-6xl md:text-7xl font-bold leading-none ${suitClass}`;
+                suitBottomElement.className = `text-4xl md:text-5xl leading-none ${suitClass}`;
+                cardCenterElement.className = `absolute inset-0 flex items-center justify-center text-8xl font-bold ${suitClass}`;
+            }
+
+            function showRandomCard() {
+                currentIndex = Math.floor(Math.random() * mnemonicaStack.length);
+                displayCard(mnemonicaStack[currentIndex]);
+            }
+
+            function showNextCard() {
+                currentIndex = (currentIndex + 1) % mnemonicaStack.length;
+                displayCard(mnemonicaStack[currentIndex]);
+            }
+            
+            cardElement.addEventListener('click', () => {
+                showNextCard();
+            });
+
+            // Initial load
+            showRandomCard();
+        });
+    </script>
+</body>
+</html>
