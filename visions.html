@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash Cards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #1f2937;
+        }
+        .container {
+            max-width: 90%;
+            margin: auto;
+            padding: 2rem;
+        }
+        .card-wrapper {
+            /* Set a minimum size for the wrapper and allow it to grow */
+            min-width: 500px;
+            min-height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f4f8; /* A light background for the wrapper */
+        }
+        .card-container {
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            border: 4px solid #3b82f6;
+            transition: width 0.3s ease, height 0.3s ease; /* Smooth transition for size change */
+            cursor: pointer;
+        }
+        .drawing {
+            max-width: 100%;
+            max-height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-origin: center center;
+            image-rendering: pixelated; /* To maintain crisp lines on zoom */
+        }
+        .button {
+            background-color: #3b82f6;
+            color: #ffffff;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+        }
+        .input-field {
+            width: 80px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+<div class="container flex flex-col items-center gap-8 p-4">
+    <!-- <h1 class="text-4xl sm:text-5xl font-bold text-center text-gray-800 tracking-tight">Flash Cards</h1>
+    <p class="text-center text-gray-600 max-w-lg">Click the buttons to navigate, or click the card to reveal its name.</p> -->
+
+    <div class="card-wrapper">
+        <div id="flashcard" class="card-container" title="Click to reveal name">
+            <!-- The drawing will be displayed here -->
+        </div>
+    </div>
+    
+    <div class="flex gap-4">
+        <button id="firstBtn" class="button">First</button>
+        <button id="prevBtn" class="button">Previous</button>
+        <button id="randomBtn" class="button">Random</button>
+        <button id="nextBtn" class="button">Next</button>
+    </div>
+
+    <!-- <button id="toggleDebug" class="mt-4 text-xs text-gray-400 hover:text-gray-600 underline transition-colors">Show Debug Settings</button> -->
+
+    <!-- Debug settings section -->
+    <div id="debugPanel" class="hidden flex flex-col gap-4 p-6 bg-gray-200 rounded-xl shadow-inner mt-4 w-full max-w-2xl">
+        <h2 class="text-xl font-bold text-gray-700 text-center">Debug Settings</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
+            <div class="flex flex-col items-center">
+                <label for="xInput" class="text-sm font-semibold text-gray-600">X</label>
+                <input type="number" id="xInput" class="input-field p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500">
+            </div>
+            <div class="flex flex-col items-center">
+                <label for="yInput" class="text-sm font-semibold text-gray-600">Y</label>
+                <input type="number" id="yInput" class="input-field p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500">
+            </div>
+            <div class="flex flex-col items-center">
+                <label for="widthInput" class="text-sm font-semibold text-gray-600">Width</label>
+                <input type="number" id="widthInput" class="input-field p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500">
+            </div>
+            <div class="flex flex-col items-center">
+                <label for="heightInput" class="text-sm font-semibold text-gray-600">Height</label>
+                <input type="number" id="heightInput" class="input-field p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500">
+            </div>
+            <div class="flex flex-col items-center">
+                <label for="rotationInput" class="text-sm font-semibold text-gray-600">Rotation</label>
+                <input type="number" id="rotationInput" class="input-field p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+        <div class="mt-4 p-4 bg-gray-100 rounded-lg border-dashed border-2 border-gray-400 overflow-x-auto">
+            <code id="cardValueDisplay" class="text-sm text-gray-800 font-mono"></code>
+        </div>
+    </div>
+</div>
+
+<script>
+    const imagePath = "https://dearmash.github.io/codepen/visions.png";
+    const flashcardEl = document.getElementById('flashcard');
+    const firstBtn = document.getElementById('firstBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const randomBtn = document.getElementById('randomBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    // const toggleDebugBtn = document.getElementById('toggleDebug');
+    const debugPanel = document.getElementById('debugPanel');
+    
+    // Debug inputs
+    const xInput = document.getElementById('xInput');
+    const yInput = document.getElementById('yInput');
+    const widthInput = document.getElementById('widthInput');
+    const heightInput = document.getElementById('heightInput');
+    const rotationInput = document.getElementById('rotationInput');
+    const cardValueDisplay = document.getElementById('cardValueDisplay');
+
+    let currentCardIndex = 0;
+    let isFlashing = false;
+
+    // The user's image is a grid of 5x5 drawings.
+    // Each entry in this array represents a drawing with its coordinates.
+    // x and y are the top-left corner of the drawing, width and height are its dimensions.
+    const cards = [
+        { x: 1936, y: 2648, width: 468, height: 520, rotation: 270, name: "A Smiley Sun" },
+        { x: 1961, y: 2104, width: 341, height: 508, rotation: 270, name: "Bicycle" },
+        { x: 1942, y: 1464, width: 379, height: 580, rotation: 270, name: "Car" },
+        { x: 1937, y:  897, width: 390, height: 511, rotation:   0, name: "Dog" },
+        { x: 1860, y:  338, width: 396, height: 552, rotation:  90, name: "Elephant" },
+        { x: 1586, y: 2522, width: 303, height: 570, rotation:   0, name: "Flower" },
+        { x: 1066, y: 2545, width: 430, height: 525, rotation:   0, name: "Godzilla" },
+        { x:  610, y: 2584, width: 420, height: 507, rotation: 270, name: "House" },
+        { x:   71, y: 2571, width: 359, height: 597, rotation:   0, name: "Ice cream" },
+        { x: 1395, y: 1992, width: 417, height: 568, rotation: 270, name: "Jetplane" },
+        { x:  958, y: 1943, width: 391, height: 531, rotation:  90, name: "Kitten" },
+        { x:  517, y: 2048, width: 397, height: 550, rotation:  90, name: "Locomotive" },
+        { x:   90, y: 2073, width: 379, height: 499, rotation:   0, name: "Man" },
+        { x: 1395, y: 1560, width: 356, height: 389, rotation:  90, name: "Nest" },
+        { x:  928, y: 1425, width: 368, height: 524, rotation:  90, name: "Pisces" },
+        { x:  500, y: 1524, width: 334, height: 446, rotation:   0, name: "Queen / Paddington" },
+        { x:   90, y: 1425, width: 295, height: 584, rotation:   0, name: "Rabbit" },
+        { x: 1450, y:  973, width: 391, height: 580, rotation:   0, name: "Space Rocket" },
+        { x:  958, y:  854, width: 382, height: 540, rotation:   0, name: "Tree" },
+        { x:  500, y:  854, width: 430, height: 599, rotation:   0, name: "UFO-Robot" },
+        { x:   90, y:  854, width: 320, height: 506, rotation:   0, name: "Vodka" },
+        { x: 1395, y:  328, width: 447, height: 639, rotation:   0, name: "Water" },
+        { x:  944, y:  362, width: 395, height: 425, rotation:   0, name: "Xmas" },
+        { x:  490, y:  407, width: 414, height: 414, rotation:   0, name: "Yacht" },
+        { x:   55, y:  328, width: 357, height: 493, rotation:  90, name: "Zoo" },
+   ];
+    
+    // Function to draw the card based on a card data object
+    function drawCard(card) {
+        const img = new Image();
+        img.src = imagePath;
+
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const isRotated = card.rotation === 90 || card.rotation === 270;
+
+            if (isRotated) {
+                canvas.width = card.height;
+                canvas.height = card.width;
+            } else {
+                canvas.width = card.width;
+                canvas.height = card.height;
+            }
+
+            const ctx = canvas.getContext('2d');
+            
+            ctx.save();
+            
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(card.rotation * Math.PI / 180);
+            
+            if (isRotated) {
+                ctx.drawImage(img, card.x, card.y, card.width, card.height, -canvas.height / 2, -canvas.width / 2, canvas.height, canvas.width);
+            } else {
+                ctx.drawImage(img, card.x, card.y, card.width, card.height, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
+            }
+            
+            ctx.restore();
+
+            if (isRotated) {
+                flashcardEl.style.width = `${card.height}px`;
+                flashcardEl.style.height = `${card.width}px`;
+            } else {
+                flashcardEl.style.width = `${card.width}px`;
+                flashcardEl.style.height = `${card.height}px`;
+            }
+
+            // Only clear the previous drawings, leaving the flash label if it exists
+            const existingCanvas = flashcardEl.querySelector('canvas');
+            if (existingCanvas) {
+                flashcardEl.removeChild(existingCanvas);
+            }
+            flashcardEl.prepend(canvas);
+        };
+    }
+
+    // Function to update debug inputs and draw the card from the data array
+    function showFlashCard(index) {
+        if (index < 0 || index >= cards.length) {
+            console.error("Invalid card index:", index);
+            return;
+        }
+        
+        const card = cards[index];
+        xInput.value = card.x;
+        yInput.value = card.y;
+        widthInput.value = card.width;
+        heightInput.value = card.height;
+        rotationInput.value = card.rotation;
+        
+        updateCardValueDisplay(card);
+        drawCard(card);
+    }
+
+    // Function to update the display from the debug inputs
+    function updateDisplayFromInputs() {
+        const tempCard = {
+            x: parseFloat(xInput.value) || 0,
+            y: parseFloat(yInput.value) || 0,
+            width: parseFloat(widthInput.value) || 0,
+            height: parseFloat(heightInput.value) || 0,
+            rotation: parseFloat(rotationInput.value) || 0,
+            name: cards[currentCardIndex].name // Keep original name during live debug
+        };
+        updateCardValueDisplay(tempCard);
+        drawCard(tempCard);
+    }
+    
+    // Function to update the plain text display field
+    function updateCardValueDisplay(card) {
+        // Function to create a padded string with non-breaking spaces
+        const padNumber = (value, length) => {
+            const str = String(value);
+            const spaces = length - str.length;
+            if (spaces > 0) {
+                return '&nbsp;'.repeat(spaces) + str;
+            }
+            return str;
+        };
+
+        const xVal = padNumber(card.x, 4);
+        const yVal = padNumber(card.y, 4);
+        const rotationVal = padNumber(card.rotation, 3);
+        
+        cardValueDisplay.innerHTML = `{ x: ${xVal}, y: ${yVal}, width: ${card.width}, height: ${card.height}, rotation: ${rotationVal}, name: "${card.name}" }`;
+    }
+
+    // Flash the card name on screen
+    function flashName() {
+        if (isFlashing) return;
+        isFlashing = true;
+
+        const name = cards[currentCardIndex].name;
+        const overlay = document.createElement('div');
+        overlay.className = 'absolute inset-0 flex items-center justify-center bg-black/40 text-white text-3xl font-bold transition-opacity duration-300 opacity-0 pointer-events-none z-10';
+        overlay.textContent = name;
+        
+        flashcardEl.appendChild(overlay);
+        
+        // Trigger animation
+        requestAnimationFrame(() => {
+            overlay.classList.replace('opacity-0', 'opacity-100');
+            setTimeout(() => {
+                overlay.classList.replace('opacity-100', 'opacity-0');
+                setTimeout(() => {
+                    overlay.remove();
+                    isFlashing = false;
+                }, 300);
+            }, 1000);
+        });
+    }
+
+
+    // Add event listeners for the debug inputs
+    xInput.addEventListener('input', updateDisplayFromInputs);
+    yInput.addEventListener('input', updateDisplayFromInputs);
+    widthInput.addEventListener('input', updateDisplayFromInputs);
+    heightInput.addEventListener('input', updateDisplayFromInputs);
+    rotationInput.addEventListener('input', updateDisplayFromInputs);
+
+    // Event listeners for the buttons
+    firstBtn.addEventListener('click', () => {
+        currentCardIndex = 0;
+        showFlashCard(currentCardIndex);
+    });
+
+    prevBtn.addEventListener('click', () => {
+        currentCardIndex = (currentCardIndex - 1 + cards.length) % cards.length;
+        showFlashCard(currentCardIndex);
+    });
+
+    randomBtn.addEventListener('click', () => {
+        currentCardIndex = Math.floor(Math.random() * cards.length);
+        showFlashCard(currentCardIndex);
+    });
+
+    nextBtn.addEventListener('click', () => {
+        currentCardIndex = (currentCardIndex + 1) % cards.length;
+        showFlashCard(currentCardIndex);
+    });
+
+    // toggleDebugBtn.addEventListener('click', () => {
+    //     const isHidden = debugPanel.classList.toggle('hidden');
+    //     toggleDebugBtn.textContent = isHidden ? 'Show Debug Settings' : 'Hide Debug Settings';
+    // });
+
+    flashcardEl.addEventListener('click', flashName);
+
+    // Show the first flash card when the page loads
+    window.onload = () => {
+        showFlashCard(currentCardIndex);
+    };
+
+</script>
+</body>
+</html>
