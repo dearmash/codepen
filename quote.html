@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Random Quote Generator</title>
+
+<style>
+
+body {
+
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+background-color: #f8f9fa;
+
+display: flex;
+
+justify-content: center;
+
+align-items: center;
+
+height: 100vh;
+
+margin: 0;
+
+padding: 20px;
+
+box-sizing: border-box;
+
+}
+
+
+
+.card {
+
+background: white;
+
+padding: 30px;
+
+border-radius: 12px;
+
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+
+max-width: 450px;
+
+width: 100%;
+
+text-align: center;
+
+}
+
+
+
+.quote-text {
+
+font-size: 1.25rem;
+
+color: #202124;
+
+margin-bottom: 10px;
+
+line-height: 1.5;
+
+}
+
+
+
+.quote-author {
+
+font-size: 0.95rem;
+
+color: #5f6368;
+
+margin-bottom: 25px;
+
+font-style: italic;
+
+}
+
+
+
+.btn {
+
+background-color: #fbbc04; /* Google Keep Yellow */
+
+color: #202124;
+
+border: none;
+
+padding: 12px 24px;
+
+font-size: 1rem;
+
+font-weight: 500;
+
+border-radius: 8px;
+
+cursor: pointer;
+
+transition: background-color 0.2s, transform 0.1s;
+
+width: 100%;
+
+}
+
+
+
+.btn:hover {
+
+background-color: #eaaf00;
+
+}
+
+
+
+.btn:active {
+
+transform: scale(0.98);
+
+}
+
+
+
+.toast {
+
+visibility: hidden;
+
+min-width: 200px;
+
+background-color: #323232;
+
+color: #fff;
+
+text-align: center;
+
+border-radius: 4px;
+
+padding: 12px;
+
+position: fixed;
+
+z-index: 1;
+
+bottom: 30px;
+
+font-size: 0.9rem;
+
+opacity: 0;
+
+transition: opacity 0.3s, visibility 0.3s;
+
+}
+
+
+
+.toast.show {
+
+visibility: visible;
+
+opacity: 1;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+
+<div class="card">
+
+<div class="quote-text" id="quote">"Loading an inspiring thought..."</div>
+
+<div class="quote-author" id="author"></div>
+
+<button class="btn" id="action-btn">Copy & Open Keep</button>
+
+</div>
+
+
+
+<div id="toast" class="toast">Copied! Opening Google Keep...</div>
+
+
+
+<script>
+
+// Sample quotes pool
+
+const quotes = [
+
+{ text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+
+{ text: "Simplicity is the ultimate sophistication.", author: "Leonardo da Vinci" },
+
+{ text: "Make it work, make it right, make it fast.", author: "Kent Beck" },
+
+{ text: " some people want it to happen, some wish it would happen, others make it happen.", author: "Michael Jordan" },
+
+{ text: "Talk is cheap. Show me the code.", author: "Linus Torvalds" }
+
+];
+
+
+
+const quoteEl = document.getElementById('quote');
+
+const authorEl = document.getElementById('author');
+
+const btnEl = document.getElementById('action-btn');
+
+const toastEl = document.getElementById('toast');
+
+
+
+let currentQuote = "";
+
+
+
+function displayRandomQuote() {
+
+const randomIndex = Math.floor(Math.random() * quotes.length);
+
+const selection = quotes[randomIndex];
+
+currentQuote = `"${selection.text}" — ${selection.author}`;
+
+quoteEl.innerText = `"${selection.text}"`;
+
+authorEl.innerText = selection.author;
+
+}
+
+
+
+async function handleAction() {
+
+try {
+
+// 1. Copy to clipboard using modern Clipboard API
+
+await navigator.clipboard.writeText(currentQuote);
+
+
+// 2. Show brief visual confirmation
+
+toastEl.classList.add('show');
+
+
+// 3. Open Google Keep
+
+// On iOS and Android, this universal link automatically triggers the native app if installed.
+
+setTimeout(() => {
+
+toastEl.classList.remove('show');
+
+window.location.href = "https://keep.google.com/";
+
+}, 800);
+
+
+
+} catch (err) {
+
+console.error('Failed to copy text: ', err);
+
+// Fallback attempt to open the app anyway if clipboard fails
+
+window.location.href = "https://keep.google.com/";
+
+}
+
+}
+
+
+
+// Initialize
+
+btnEl.addEventListener('click', handleAction);
+
+displayRandomQuote();
+
+</script>
+
+</body>
+
+</html> 
