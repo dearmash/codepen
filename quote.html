@@ -150,7 +150,7 @@
             
             // 3. Setup Android Intent URL with URL-encoded quote
             const encodedQuote = encodeURIComponent(currentQuote);
-            const intentUrl = "intent:#Intent;action=android.intent.action.CREATE_NOTE;package=com.google.android.keep;S.android.intent.extra.SUBJECT=Quote;S.android.intent.extra.TEXT=" + encodedQuote + ";end;";
+            const intentUrl = "intent:#Intent;action=android.intent.action.SEND;type=text/plain;package=com.google.android.keep;S.android.intent.extra.TEXT=" + encodedQuote + ";end;";
 
             // 4. Trigger redirection with intent after a brief confirmation delay
             setTimeout(() => {
