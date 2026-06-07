@@ -145,7 +145,7 @@
         let currentQuote = "";
         
         // Define clean intent without additional parameters
-        const intentUrl = "https://keep.new";
+        const intentUrl = "intent://share#Intent;action=android.intent.action.SEND;type=text/plain;S.android.intent.extra.TEXT=Your%20Text%20Here;S.android.intent.extra.SUBJECT=Your%20Title;package=com.google.android.apps.docs.editors.keep;end";
 
         // Update validation box
         debugUrlEl.innerText = intentUrl;
