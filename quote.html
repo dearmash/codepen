@@ -262,8 +262,7 @@ setTimeout(() => {
 
 toastEl.classList.remove('show');
 
-window.location.href = "intent:#Intent;action=android.intent.action.CREATE_NOTE;package=com.google.android.keep;S.android.intent.extra.SUBJECT=My%20Title;S.android.intent.extra.TEXT=This%20is%20the%20note%20body;end;";
-
+window.location.href = "intent:#Intent;action=android.intent.action.CREATE_NOTE;end;";
 }, 800);
 
 
@@ -274,8 +273,7 @@ console.error('Failed to copy text: ', err);
 
 // Fallback attempt to open the app anyway if clipboard fails
 
-window.location.href = "intent:#Intent;action=android.intent.action.CREATE_NOTE;package=com.google.android.keep;S.android.intent.extra.SUBJECT=My%20Title;S.android.intent.extra.TEXT=This%20is%20the%20note%20body;end;";
-
+window.location.href = "intent:#Intent;action=android.intent.action.CREATE_NOTE;end;";
 }
 
 }
