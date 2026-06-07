@@ -117,9 +117,6 @@
         <div class="quote-author" id="author"></div>
         <button class="btn" id="action-btn">Copy & Open Keep</button>
     </div>
-    <button class="btn" onclick="window.location.href='intent://share#Intent;action=android.intent.action.SEND;type=text/plain;S.android.intent.extra.TEXT=MyText;S.android.intent.extra.SUBJECT=MyTitle;package=com.google.android.keep;end'">
-        Create Note
-   </button>
 
     <!-- Live Validation Debug Output -->
     <div class="debug-panel">
@@ -148,7 +145,7 @@
         let currentQuote = "";
         
         // Define clean intent without additional parameters
-        const intentUrl = "intent://share#Intent;action=android.intent.action.SEND;type=text/plain;S.android.intent.extra.TEXT=Your%20Note%20Text%20Here;S.android.intent.extra.SUBJECT=Your%20Note%20Title;package=com.google.android.keep;end";
+        const intentUrl = "https://keep.google.com/create";
 
         // Update validation box
         debugUrlEl.innerText = intentUrl;
