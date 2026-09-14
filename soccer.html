@@ -1,0 +1,1940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Soccer Sub & Playtime Manager</title>
+  <style>
+    :root {
+      --bg-main: #0a0f16;
+      --bg-panel: #131b26;
+      --bg-card: #1c2736;
+      --bg-card-hover: #243245;
+      --border: #293a4e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.15);
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --accent-active: #38bdf8;
+      --accent-bench: #a78bfa;
+      --card-radius: 12px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      touch-action: pan-y;
+    }
+
+    /* HEADER & MATCH CONTROLS */
+    header {
+      background-color: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+      z-index: 20;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #fff;
+    }
+
+    .brand-title span {
+      color: var(--primary);
+    }
+
+    .stint-clock-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.45);
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .stint-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .stint-time {
+      font-size: 1.25rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: var(--accent-active);
+    }
+
+    .status-pill {
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .status-pill.paused {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .status-pill.running {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--primary);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-toggle-match {
+      flex: 1.4;
+      height: 44px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+      color: #fff;
+    }
+
+    .btn-toggle-match.start {
+      background-color: var(--primary);
+    }
+    .btn-toggle-match.start:active {
+      background-color: var(--primary-hover);
+      transform: scale(0.98);
+    }
+
+    .btn-toggle-match.pause {
+      background-color: var(--warning);
+      color: #000;
+    }
+    .btn-toggle-match.pause:active {
+      background-color: #d97706;
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      flex: 0.8;
+      background-color: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      height: 44px;
+      padding: 0 10px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+
+    .btn-secondary:active {
+      background-color: var(--bg-card-hover);
+      transform: scale(0.98);
+    }
+
+    .btn-secondary:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .hint-bar {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 4px 8px;
+      background: rgba(0, 0, 0, 0.25);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      flex-shrink: 0;
+    }
+
+    /* MATCH BOARD COLUMNS */
+    .board-container {
+      flex: 1;
+      display: flex;
+      gap: 8px;
+      padding: 8px 8px 85px 8px; /* space for sticky pending footer bar */
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .column {
+      flex: 1;
+      background-color: var(--bg-panel);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .column-header {
+      padding: 10px 10px;
+      background: rgba(0, 0, 0, 0.25);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .column-title-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .col-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .col-dot.active { background-color: var(--primary); box-shadow: 0 0 8px var(--primary); }
+    .col-dot.bench { background-color: var(--accent-bench); }
+
+    .column-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .badge-count {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 12px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .sort-indicator {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      white-space: nowrap;
+    }
+
+    .player-list {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 0;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* PLAYER CARDS */
+    .player-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: grab;
+      position: relative;
+      touch-action: pan-y;
+      transition: transform 0.12s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+      height: 52px;
+      min-height: 52px;
+      max-height: 52px;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+
+    .player-card:active {
+      cursor: grabbing;
+    }
+
+    .player-card.selected-for-swap {
+      border-color: var(--accent-active) !important;
+      background-color: rgba(56, 189, 248, 0.2) !important;
+      box-shadow: 0 0 0 2px var(--accent-active);
+      transform: scale(0.98);
+    }
+
+    .player-card.pending-state {
+      border: 2px dashed var(--warning) !important;
+      background-color: var(--warning-bg) !important;
+      animation: pendingBorder 2s infinite ease-in-out;
+    }
+
+    @keyframes pendingBorder {
+      0%, 100% { border-color: var(--warning); }
+      50% { border-color: #fde047; }
+    }
+
+    .player-card.drop-target-hover {
+      border-color: var(--accent-active) !important;
+      background-color: rgba(56, 189, 248, 0.25) !important;
+      transform: scale(1.02);
+    }
+
+    .card-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .jersey-badge {
+      width: 26px;
+      height: 26px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.82rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .player-names-wrap {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .player-name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #f8fafc;
+      line-height: 1.2;
+    }
+
+    .pending-tag {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: var(--warning);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+      margin-top: 2px;
+      display: block;
+    }
+
+    .pending-tag.direct-tag {
+      color: #38bdf8;
+    }
+
+    .btn-unstage {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ef4444;
+      border: 2px solid var(--bg-panel);
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.65rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      padding: 0;
+      z-index: 10;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+      transition: transform 0.1s ease, background-color 0.15s ease;
+    }
+
+    .btn-unstage:hover, .btn-unstage:active {
+      background: #dc2626;
+      transform: scale(1.15);
+    }
+
+    .btn-unstage::after {
+      content: '';
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      bottom: -6px;
+      left: -6px;
+    }
+
+    .section-divider {
+      font-size: 0.62rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 6px 2px 2px 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+
+    .card-stats {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .playtime-pill {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-variant-numeric: tabular-nums;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      white-space: nowrap;
+    }
+
+    .player-card.is-active-running .playtime-pill {
+      color: #34d399;
+      border-color: rgba(52, 211, 153, 0.45);
+      background: rgba(16, 185, 129, 0.18);
+    }
+
+    .btn-delete-player {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: var(--danger);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .editing-roster .btn-delete-player {
+      display: flex;
+    }
+
+    /* BLANK DROP ZONE */
+    .drop-zone {
+      border: 2px dashed rgba(255, 255, 255, 0.18);
+      border-radius: var(--card-radius);
+      padding: 12px 10px;
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+      margin-top: auto;
+      background: rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .drop-zone:hover, .drop-zone.drop-target-hover {
+      border-color: var(--accent-active);
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-active);
+    }
+
+    /* FLOATING DRAG GHOST */
+    #drag-ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.95;
+      transform: translate(-50%, -50%) rotate(2deg) scale(1.04);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.7);
+      border-radius: var(--card-radius);
+      display: none;
+    }
+
+    /* PENDING SUBSTITUTION BAR */
+    .pending-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #0f1722;
+      border-top: 1px solid #334155;
+      padding: 10px 14px env(safe-area-inset-bottom, 12px) 14px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 100;
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.7);
+      animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .pending-bar.active {
+      display: flex;
+    }
+
+    .pending-summary {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .pending-title {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .pending-subtitle {
+      font-size: 0.7rem;
+      color: var(--warning);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pending-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-apply {
+      background-color: var(--primary);
+      color: #fff;
+      border: none;
+      height: 42px;
+      padding: 0 16px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      white-space: nowrap;
+    }
+
+    .btn-apply:active {
+      background-color: var(--primary-hover);
+      transform: scale(0.97);
+    }
+
+    .btn-cancel {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      height: 42px;
+      padding: 0 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-cancel:active {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* MODAL DIALOGS */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 420px;
+      max-height: 90dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+    }
+
+    .modal-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .modal-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+    }
+
+    .modal-body {
+      padding: 16px;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      color: #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+
+    .modal-footer {
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.25);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .form-input {
+      background: var(--bg-main);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent-active);
+    }
+
+    .roster-list-table {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 240px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .roster-list-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .roster-row-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b;
+      color: #fff;
+      border: 1px solid #475569;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      z-index: 300;
+      pointer-events: none;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER / MATCH CONTROLS -->
+  <header>
+    <div class="header-top">
+      <div class="brand-title">
+        <span>⚽</span> PitchTime
+      </div>
+
+      <div class="stint-clock-container">
+        <div class="stint-label">Current Stint</div>
+        <div class="stint-time" id="stint-display">00:00</div>
+        <div class="status-pill paused" id="status-pill">Paused</div>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <button class="btn-toggle-match start" id="btn-toggle-match">
+        <span id="match-toggle-icon">▶</span>
+        <span id="match-toggle-label">Start Match</span>
+      </button>
+
+      <button class="btn-secondary" id="btn-edit-roster">
+        <span>⚙</span> Roster
+      </button>
+
+      <button class="btn-secondary" id="btn-reset-match">
+        <span>↺</span> Reset
+      </button>
+    </div>
+  </header>
+
+  <div class="hint-bar" id="hint-bar">
+    Drag players or tap one then another to stage substitutions.
+  </div>
+
+  <!-- TWO-COLUMN MATCH BOARD -->
+  <main class="board-container">
+    <!-- ACTIVE COLUMN -->
+    <section class="column" id="col-active">
+      <div class="column-header">
+        <div class="column-title-group">
+          <div class="col-dot active"></div>
+          <h2 class="column-title">On Field</h2>
+          <span class="badge-count" id="active-count-badge">0</span>
+        </div>
+        <div class="sort-indicator" title="Sorted by most playtime at top">
+          <span>Most Time</span> ↓
+        </div>
+      </div>
+      <div class="player-list" id="active-list" data-column="active">
+        <!-- Cards rendered via JS -->
+      </div>
+      <div class="drop-zone" id="dropzone-active" data-column="active">
+        <span>+ Move to Field</span>
+      </div>
+    </section>
+
+    <!-- BENCH COLUMN -->
+    <section class="column" id="col-bench">
+      <div class="column-header">
+        <div class="column-title-group">
+          <div class="col-dot bench"></div>
+          <h2 class="column-title">Bench</h2>
+          <span class="badge-count" id="bench-count-badge">0</span>
+        </div>
+        <div class="sort-indicator" title="Sorted by least playtime at top">
+          <span>Least Time</span> ↑
+        </div>
+      </div>
+      <div class="player-list" id="bench-list" data-column="bench">
+        <!-- Cards rendered via JS -->
+      </div>
+      <div class="drop-zone" id="dropzone-bench" data-column="bench">
+        <span>+ Move to Bench</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- PENDING SUBSTITUTION BAR -->
+  <div class="pending-bar" id="pending-bar">
+    <div class="pending-summary">
+      <div class="pending-title">
+        <span>⇄</span> <span id="pending-count-text">1 Substitution Staged</span>
+      </div>
+      <div class="pending-subtitle">Showing planned lineup. Playtimes commit when applied.</div>
+    </div>
+    <div class="pending-actions">
+      <button class="btn-cancel" id="btn-cancel-pending">Cancel</button>
+      <button class="btn-apply" id="btn-apply-pending">Apply Subs</button>
+    </div>
+  </div>
+
+  <!-- FLOATING DRAG GHOST -->
+  <div id="drag-ghost"></div>
+
+  <!-- RESET CONFIRMATION MODAL -->
+  <div class="modal-overlay" id="modal-reset">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Reset Match Times?</h3>
+      </div>
+      <div class="modal-body">
+        <p>This will zero out all player playtimes and move all players to the bench.</p>
+        <p style="color: var(--text-muted); font-size: 0.8rem;">Your team roster will be kept intact.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="btn-cancel-reset">Cancel</button>
+        <button class="btn-apply" style="background-color: var(--danger);" id="btn-confirm-reset">Reset Everything</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT ROSTER MODAL -->
+  <div class="modal-overlay" id="modal-roster">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Roster Management</h3>
+        <button class="btn-cancel" id="btn-close-roster" style="height:32px; padding:0 10px;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex; gap: 8px;">
+          <div class="form-group" style="width: 75px;">
+            <label>Number</label>
+            <input type="number" id="input-player-number" class="form-input" placeholder="No." min="1" max="99">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label>Player Name</label>
+            <input type="text" id="input-player-name" class="form-input" placeholder="e.g. Alex Morgan">
+          </div>
+        </div>
+        <button class="btn-apply" id="btn-add-player" style="width: 100%; justify-content: center;">
+          + Add Player to Bench
+        </button>
+
+        <hr style="border:0; border-top:1px solid var(--border); margin: 6px 0;">
+        <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+          Current Roster (<span id="modal-roster-count">0</span>)
+        </label>
+        <div class="roster-list-table" id="modal-roster-list">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-apply" id="btn-finish-roster">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const STORAGE_KEY = 'pitchtime_soccer_data_v3';
+
+      // 19-player roster (11 starting lineup active, 8 bench)
+      const DEFAULT_ROSTER = [
+        // Starting Lineup (11 Active)
+        { id: 'p1', name: 'Aaron', number: 20, status: 'active', intervals: [], activeSince: null },
+        { id: 'p2', name: 'Antonio', number: 7, status: 'active', intervals: [], activeSince: null },
+        { id: 'p3', name: 'Benny', number: 18, status: 'active', intervals: [], activeSince: null },
+        { id: 'p4', name: 'Fred', number: 8, status: 'active', intervals: [], activeSince: null },
+        { id: 'p5', name: 'Gael', number: 9, status: 'active', intervals: [], activeSince: null },
+        { id: 'p6', name: 'Guillermo', number: 10, status: 'active', intervals: [], activeSince: null },
+        { id: 'p7', name: 'JJ', number: 14, status: 'active', intervals: [], activeSince: null },
+        { id: 'p8', name: 'Javier', number: 13, status: 'active', intervals: [], activeSince: null },
+        { id: 'p9', name: 'Noah', number: 15, status: 'active', intervals: [], activeSince: null },
+        { id: 'p10', name: 'Rapha', number: 6, status: 'active', intervals: [], activeSince: null },
+        { id: 'p11', name: 'Sophia', number: 21, status: 'active', intervals: [], activeSince: null },
+        // 8 Bench
+        { id: 'p12', name: 'Christian', number: 4, status: 'bench', intervals: [], activeSince: null },
+        { id: 'p13', name: 'Dylan', number: 99, status: 'bench', intervals: [], activeSince: null },
+        { id: 'p14', name: 'Gannon', number: 22, status: 'bench', intervals: [], activeSince: null },
+        { id: 'p15', name: 'Joshua', number: 12, status: 'bench', intervals: [], activeSince: null },
+        { id: 'p16', name: 'Mazen', number: 98, status: 'bench', intervals: [], activeSince: null },
+        { id: 'p17', name: 'Milania', number: 2, status: 'bench', intervals: [], activeSince: null },
+        { id: 'p18', name: 'Ryder', number: 11, status: 'bench', intervals: [], activeSince: null },
+        { id: 'p19', name: 'Sebastian', number: 19, status: 'bench', intervals: [], activeSince: null }
+      ];
+
+      // App state
+      let state = {
+        isRunning: false,
+        stintStartTime: null,       // timestamp when current stint resumed
+        stintElapsedAtPause: 0,     // seconds accumulated in current stint when paused
+        players: []
+      };
+
+      // Staged substitutions:
+      // stagedSwaps: Array<{ outId: string, inId: string }> - ordered list of paired switches
+      // stagedMoves: Array<{ playerId: string, targetCol: 'active' | 'bench' }> - direct one-way adds/removes
+      let stagedSwaps = [];
+      let stagedMoves = [];
+      let selectedPlayerIdForSwap = null;
+      let timerInterval = null;
+      let wakeLockSentinel = null;
+
+      // DOM Elements
+      const stintDisplay = document.getElementById('stint-display');
+      const statusPill = document.getElementById('status-pill');
+      const btnToggleMatch = document.getElementById('btn-toggle-match');
+      const matchToggleIcon = document.getElementById('match-toggle-icon');
+      const matchToggleLabel = document.getElementById('match-toggle-label');
+      const btnEditRoster = document.getElementById('btn-edit-roster');
+      const btnResetMatch = document.getElementById('btn-reset-match');
+      const activeList = document.getElementById('active-list');
+      const benchList = document.getElementById('bench-list');
+      const activeCountBadge = document.getElementById('active-count-badge');
+      const benchCountBadge = document.getElementById('bench-count-badge');
+      const pendingBar = document.getElementById('pending-bar');
+      const pendingCountText = document.getElementById('pending-count-text');
+      const btnApplyPending = document.getElementById('btn-apply-pending');
+      const btnCancelPending = document.getElementById('btn-cancel-pending');
+      const dropzoneActive = document.getElementById('dropzone-active');
+      const dropzoneBench = document.getElementById('dropzone-bench');
+      const dragGhost = document.getElementById('drag-ghost');
+      const modalReset = document.getElementById('modal-reset');
+      const btnCancelReset = document.getElementById('btn-cancel-reset');
+      const btnConfirmReset = document.getElementById('btn-confirm-reset');
+      const modalRoster = document.getElementById('modal-roster');
+      const btnCloseRoster = document.getElementById('btn-close-roster');
+      const btnFinishRoster = document.getElementById('btn-finish-roster');
+      const btnAddPlayer = document.getElementById('btn-add-player');
+      const inputPlayerName = document.getElementById('input-player-name');
+      const inputPlayerNumber = document.getElementById('input-player-number');
+      const modalRosterList = document.getElementById('modal-roster-list');
+      const modalRosterCount = document.getElementById('modal-roster-count');
+      const toastEl = document.getElementById('toast');
+      const hintBar = document.getElementById('hint-bar');
+
+      // --- INITIALIZATION ---
+      function init() {
+        loadState();
+        initWakeLock();
+        setupEventListeners();
+        renderAll();
+        startTimerLoop();
+      }
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            state.isRunning = !!parsed.isRunning;
+            state.stintStartTime = parsed.stintStartTime || null;
+            state.stintElapsedAtPause = parsed.stintElapsedAtPause || 0;
+            state.players = Array.isArray(parsed.players) ? parsed.players : DEFAULT_ROSTER;
+            stagedSwaps = Array.isArray(parsed.stagedSwaps) ? parsed.stagedSwaps : [];
+            stagedMoves = Array.isArray(parsed.stagedMoves) ? parsed.stagedMoves : [];
+          } else {
+            state.players = JSON.parse(JSON.stringify(DEFAULT_ROSTER));
+            stagedSwaps = [];
+            stagedMoves = [];
+          }
+        } catch (e) {
+          console.error('Failed to load state from localStorage', e);
+          state.players = JSON.parse(JSON.stringify(DEFAULT_ROSTER));
+          stagedSwaps = [];
+          stagedMoves = [];
+        }
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            isRunning: state.isRunning,
+            stintStartTime: state.stintStartTime,
+            stintElapsedAtPause: state.stintElapsedAtPause,
+            players: state.players,
+            stagedSwaps: stagedSwaps,
+            stagedMoves: stagedMoves
+          }));
+        } catch (e) {
+          console.error('Failed to save to localStorage', e);
+        }
+      }
+
+      function syncProposedWithCommitted() {
+        stagedSwaps = [];
+        stagedMoves = [];
+      }
+
+      function getProposedPlacement(playerId) {
+        const swapOut = stagedSwaps.find(s => s.outId === playerId);
+        if (swapOut) return 'bench';
+        const swapIn = stagedSwaps.find(s => s.inId === playerId);
+        if (swapIn) return 'active';
+        const move = stagedMoves.find(m => m.playerId === playerId);
+        if (move) return move.targetCol;
+        const p = state.players.find(p => p.id === playerId);
+        return p ? p.status : 'bench';
+      }
+
+      // --- SCREEN WAKE LOCK ---
+      async function initWakeLock() {
+        if ('wakeLock' in navigator) {
+          try {
+            wakeLockSentinel = await navigator.wakeLock.request('screen');
+            wakeLockSentinel.addEventListener('release', () => {
+              wakeLockSentinel = null;
+            });
+          } catch (err) {
+            // Wake lock may fail if user has power saving mode
+          }
+          document.addEventListener('visibilitychange', async () => {
+            if (wakeLockSentinel === null && document.visibilityState === 'visible' && state.isRunning) {
+              try {
+                wakeLockSentinel = await navigator.wakeLock.request('screen');
+              } catch (_) {}
+            }
+          });
+        }
+      }
+
+      // --- TIME CALCULATIONS ---
+      function getPlayerTotalSeconds(player) {
+        let totalMs = 0;
+        if (player.intervals && player.intervals.length > 0) {
+          for (let i = 0; i < player.intervals.length; i++) {
+            const iv = player.intervals[i];
+            if (iv.start && iv.end) {
+              totalMs += (iv.end - iv.start);
+            }
+          }
+        }
+        // Active interval: ticks in real-time if match is running and player is committed active
+        if (state.isRunning && player.status === 'active' && player.activeSince) {
+          totalMs += Math.max(0, Date.now() - player.activeSince);
+        }
+        return Math.floor(totalMs / 1000);
+      }
+
+      function formatTime(totalSeconds) {
+        const mins = Math.floor(totalSeconds / 60);
+        const secs = totalSeconds % 60;
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }
+
+      function getStintSeconds() {
+        if (state.isRunning) {
+          if (!state.stintStartTime) return 0;
+          return Math.floor(Math.max(0, Date.now() - state.stintStartTime) / 1000);
+        }
+        return state.stintElapsedAtPause || 0;
+      }
+
+      // --- TIMER LOOP ---
+      function startTimerLoop() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          if (state.isRunning) {
+            stintDisplay.textContent = formatTime(getStintSeconds());
+
+            // Live update active player counters without full DOM re-renders
+            state.players.forEach(player => {
+              const card = document.querySelector(`[data-player-id="${player.id}"]`);
+              if (card) {
+                const timeEl = card.querySelector('.playtime-pill');
+                if (timeEl) {
+                  timeEl.textContent = formatTime(getPlayerTotalSeconds(player));
+                }
+                if (player.status === 'active') {
+                  card.classList.add('is-active-running');
+                } else {
+                  card.classList.remove('is-active-running');
+                }
+              }
+            });
+          }
+        }, 500);
+      }
+
+      // --- MATCH CONTROLS ---
+      function toggleMatchRunning() {
+        const now = Date.now();
+        if (!state.isRunning) {
+          // START / RESUME:
+          // Stint clock resets to 0:00 and counts up mm:ss from there
+          state.isRunning = true;
+          state.stintStartTime = now;
+          state.stintElapsedAtPause = 0;
+
+          // Start active stints for all currently committed active players
+          state.players.forEach(p => {
+            if (p.status === 'active') {
+              p.activeSince = now;
+            } else {
+              p.activeSince = null;
+            }
+          });
+
+          showToast('Match Resumed');
+        } else {
+          // PAUSE:
+          // Freeze stint timer
+          state.stintElapsedAtPause = getStintSeconds();
+          state.isRunning = false;
+
+          // Close active intervals for currently committed active players
+          state.players.forEach(p => {
+            if (p.status === 'active' && p.activeSince) {
+              if (!p.intervals) p.intervals = [];
+              p.intervals.push({ start: p.activeSince, end: now });
+              p.activeSince = null;
+            }
+          });
+
+          showToast('Match Paused');
+        }
+
+        saveState();
+        renderHeader();
+        renderAll();
+      }
+
+      function resetMatch() {
+        state.isRunning = false;
+        state.stintStartTime = null;
+        state.stintElapsedAtPause = 0;
+
+        // Zero out everyone and move everyone to the bench
+        state.players.forEach(p => {
+          p.status = 'bench';
+          p.activeSince = null;
+          p.intervals = [];
+        });
+
+        stagedSwaps = [];
+        stagedMoves = [];
+        selectedPlayerIdForSwap = null;
+        saveState();
+        renderAll();
+        showToast('Match times zeroed. All players moved to bench.');
+      }
+
+      // --- STAGED SUBSTITUTIONS ---
+      function stageSwap(id1, id2) {
+        if (!id1 || !id2 || id1 === id2) return;
+
+        const p1 = state.players.find(p => p.id === id1);
+        const p2 = state.players.find(p => p.id === id2);
+        if (!p1 || !p2) return;
+
+        // Find existing swaps involving p1 or p2
+        const swap1 = stagedSwaps.find(s => s.outId === id1 || s.inId === id1);
+        const swap2 = stagedSwaps.find(s => s.outId === id2 || s.inId === id2);
+
+        // Remove any one-way direct moves involving p1 or p2
+        stagedMoves = stagedMoves.filter(m => m.playerId !== id1 && m.playerId !== id2);
+
+        // CASE 1: They are already swapped with EACH OTHER!
+        // Dragging them onto each other cancels the swap.
+        if (swap1 && swap2 && swap1 === swap2) {
+          stagedSwaps = stagedSwaps.filter(s => s !== swap1);
+          showToast(`Cancelled swap for ${p1.name} and ${p2.name}`);
+          selectedPlayerIdForSwap = null;
+          saveState();
+          renderAll();
+          return;
+        }
+
+        // CASE 2: BOTH are committed ACTIVE (both originally on field)
+        if (p1.status === 'active' && p2.status === 'active') {
+          if (!swap1 && !swap2) {
+            showToast('Both players are on the field. Drag one to the bench to substitute.');
+            selectedPlayerIdForSwap = null;
+            renderAll();
+            return;
+          }
+
+          if (swap1 && !swap2) {
+            // p1 is in a swap (e.g. A in A<->C), p2 is not (e.g. B).
+            // Replace p1 with p2 in that swap!
+            if (swap1.outId === id1) {
+              swap1.outId = id2;
+            } else {
+              swap1.inId = id2;
+            }
+            const partner = state.players.find(p => p.id === (swap1.outId === id2 ? swap1.inId : swap1.outId));
+            showToast(`Swapped: ${p2.name} now subbing for ${partner ? partner.name : ''}`);
+          } else if (!swap1 && swap2) {
+            // p2 is in a swap, p1 is not.
+            // Replace p2 with p1 in that swap!
+            if (swap2.outId === id2) {
+              swap2.outId = id1;
+            } else {
+              swap2.inId = id1;
+            }
+            const partner = state.players.find(p => p.id === (swap2.outId === id1 ? swap2.inId : swap2.outId));
+            showToast(`Swapped: ${p1.name} now subbing for ${partner ? partner.name : ''}`);
+          } else {
+            // Both are in different swaps! Trade partners:
+            if (swap1.outId === id1) swap1.outId = id2; else swap1.inId = id2;
+            if (swap2.outId === id2) swap2.outId = id1; else swap2.inId = id1;
+            showToast(`Swapped substitution partners for ${p1.name} and ${p2.name}`);
+          }
+
+          selectedPlayerIdForSwap = null;
+          saveState();
+          renderAll();
+          return;
+        }
+
+        // CASE 3: BOTH are committed BENCH (both originally on bench)
+        if (p1.status === 'bench' && p2.status === 'bench') {
+          if (!swap1 && !swap2) {
+            showToast('Both players are on the bench. Drag one to the field to substitute.');
+            selectedPlayerIdForSwap = null;
+            renderAll();
+            return;
+          }
+
+          if (swap1 && !swap2) {
+            // p1 is in a swap, p2 is not. Replace p1 with p2!
+            if (swap1.inId === id1) {
+              swap1.inId = id2;
+            } else {
+              swap1.outId = id2;
+            }
+            const partner = state.players.find(p => p.id === (swap1.inId === id2 ? swap1.outId : swap1.inId));
+            showToast(`Swapped: ${p2.name} now subbing for ${partner ? partner.name : ''}`);
+          } else if (!swap1 && swap2) {
+            // p2 is in a swap, p1 is not. Replace p2 with p1!
+            if (swap2.inId === id2) {
+              swap2.inId = id1;
+            } else {
+              swap2.outId = id1;
+            }
+            const partner = state.players.find(p => p.id === (swap2.inId === id1 ? swap2.outId : swap2.inId));
+            showToast(`Swapped: ${p1.name} now subbing for ${partner ? partner.name : ''}`);
+          } else {
+            // Both in different swaps. Trade partners!
+            if (swap1.inId === id1) swap1.inId = id2; else swap1.outId = id2;
+            if (swap2.inId === id2) swap2.inId = id1; else swap2.outId = id1;
+            showToast(`Swapped substitution partners for ${p1.name} and ${p2.name}`);
+          }
+
+          selectedPlayerIdForSwap = null;
+          saveState();
+          renderAll();
+          return;
+        }
+
+        // CASE 4: ONE is committed ACTIVE and ONE is committed BENCH
+        // One is the active player (coming off), one is the bench player (coming on)
+        const activePlayer = (p1.status === 'active' ? p1 : p2);
+        const benchPlayer = (p1.status === 'bench' ? p1 : p2);
+
+        // Remove any old swaps involving either player
+        stagedSwaps = stagedSwaps.filter(s =>
+          s.outId !== activePlayer.id && s.inId !== activePlayer.id &&
+          s.outId !== benchPlayer.id && s.inId !== benchPlayer.id
+        );
+
+        // Add the clean swap pair: activePlayer goes OUT, benchPlayer goes IN
+        stagedSwaps.push({ outId: activePlayer.id, inId: benchPlayer.id });
+        showToast(`Staged swap: ${benchPlayer.name} ⇄ ${activePlayer.name}`);
+
+        selectedPlayerIdForSwap = null;
+        saveState();
+        renderAll();
+      }
+
+      function stageMove(playerId, targetColumn) {
+        if (!playerId || !targetColumn) return;
+
+        // Remove any prior swap or move involving this player
+        stagedSwaps = stagedSwaps.filter(s => s.outId !== playerId && s.inId !== playerId);
+        stagedMoves = stagedMoves.filter(m => m.playerId !== playerId);
+
+        const p = state.players.find(p => p.id === playerId);
+        if (p) {
+          if (targetColumn !== p.status) {
+            stagedMoves.push({ playerId, targetCol: targetColumn });
+            showToast(`Staged: ${p.name} → ${targetColumn === 'active' ? 'Field' : 'Bench'}`);
+          } else {
+            showToast(`Returned ${p.name} to ${targetColumn === 'active' ? 'Field' : 'Bench'}`);
+          }
+        }
+
+        selectedPlayerIdForSwap = null;
+        saveState();
+        renderAll();
+      }
+
+      function unstagePlayer(playerId) {
+        stagedSwaps = stagedSwaps.filter(s => s.outId !== playerId && s.inId !== playerId);
+        stagedMoves = stagedMoves.filter(m => m.playerId !== playerId);
+        selectedPlayerIdForSwap = null;
+        saveState();
+        renderAll();
+        showToast('Removed staged substitution');
+      }
+
+      function hasPendingChanges() {
+        return stagedSwaps.length > 0 || stagedMoves.length > 0;
+      }
+
+      function getPendingCount() {
+        return stagedSwaps.length + stagedMoves.length;
+      }
+
+      function applyPendingSubstitutions() {
+        const now = Date.now();
+
+        stagedSwaps.forEach(swap => {
+          const outPlayer = state.players.find(p => p.id === swap.outId);
+          const inPlayer = state.players.find(p => p.id === swap.inId);
+
+          if (outPlayer) {
+            if (state.isRunning && outPlayer.status === 'active' && outPlayer.activeSince) {
+              if (!outPlayer.intervals) outPlayer.intervals = [];
+              outPlayer.intervals.push({ start: outPlayer.activeSince, end: now });
+              outPlayer.activeSince = null;
+            }
+            outPlayer.status = 'bench';
+          }
+
+          if (inPlayer) {
+            if (state.isRunning && inPlayer.status === 'bench') {
+              inPlayer.activeSince = now;
+            }
+            inPlayer.status = 'active';
+          }
+        });
+
+        stagedMoves.forEach(move => {
+          const p = state.players.find(p => p.id === move.playerId);
+          if (p) {
+            if (state.isRunning) {
+              if (move.targetCol === 'bench' && p.status === 'active' && p.activeSince) {
+                if (!p.intervals) p.intervals = [];
+                p.intervals.push({ start: p.activeSince, end: now });
+                p.activeSince = null;
+              } else if (move.targetCol === 'active' && p.status === 'bench') {
+                p.activeSince = now;
+              }
+            }
+            p.status = move.targetCol;
+          }
+        });
+
+        stagedSwaps = [];
+        stagedMoves = [];
+        selectedPlayerIdForSwap = null;
+        saveState();
+        renderAll();
+        showToast('Substitutions Applied!');
+      }
+
+      function cancelPendingSubstitutions() {
+        stagedSwaps = [];
+        stagedMoves = [];
+        selectedPlayerIdForSwap = null;
+        saveState();
+        renderAll();
+        showToast('Pending substitutions cancelled');
+      }
+
+      // --- RENDERING ---
+      function renderHeader() {
+        if (state.isRunning) {
+          statusPill.className = 'status-pill running';
+          statusPill.textContent = 'Active';
+          btnToggleMatch.className = 'btn-toggle-match pause';
+          matchToggleIcon.textContent = '⏸';
+          matchToggleLabel.textContent = 'Pause Match';
+          btnResetMatch.disabled = true;
+          btnEditRoster.disabled = true;
+          hintBar.textContent = 'Match active. Drag or tap players to stage subs for next stoppage.';
+        } else {
+          statusPill.className = 'status-pill paused';
+          statusPill.textContent = 'Paused';
+          btnToggleMatch.className = 'btn-toggle-match start';
+          matchToggleIcon.textContent = '▶';
+          matchToggleLabel.textContent = (state.stintStartTime ? 'Resume Match' : 'Start Match');
+          btnResetMatch.disabled = false;
+          btnEditRoster.disabled = false;
+          hintBar.textContent = 'Match paused. Drag or tap players to set up lineup.';
+        }
+
+        stintDisplay.textContent = formatTime(getStintSeconds());
+      }
+
+      function renderAll() {
+        renderHeader();
+
+        // 1. Build Active (Field) List
+        // Order: Swaps (incoming) -> Direct Adds -> Regular Active Players (playtime desc)
+        const activeSwaps = [];
+        const activeDirect = [];
+        const activeRegular = [];
+
+        stagedSwaps.forEach((swap, idx) => {
+          const inPlayer = state.players.find(p => p.id === swap.inId);
+          const outPlayer = state.players.find(p => p.id === swap.outId);
+          if (inPlayer && outPlayer) {
+            activeSwaps.push({
+              player: inPlayer,
+              stagedType: 'swap-in',
+              swapIndex: idx + 1,
+              partner: outPlayer
+            });
+          }
+        });
+
+        stagedMoves.filter(m => m.targetCol === 'active').forEach(m => {
+          const p = state.players.find(p => p.id === m.playerId);
+          if (p) {
+            activeDirect.push({
+              player: p,
+              stagedType: 'direct-in'
+            });
+          }
+        });
+
+        const stagedOutSet = new Set(stagedSwaps.map(s => s.outId));
+        const stagedMoveSet = new Set(stagedMoves.map(m => m.playerId));
+        state.players.forEach(p => {
+          if (p.status === 'active' && !stagedOutSet.has(p.id) && !stagedMoveSet.has(p.id)) {
+            activeRegular.push({
+              player: p,
+              stagedType: 'none'
+            });
+          }
+        });
+        activeRegular.sort((a, b) => {
+          const timeA = getPlayerTotalSeconds(a.player);
+          const timeB = getPlayerTotalSeconds(b.player);
+          if (timeB !== timeA) return timeB - timeA;
+          return a.player.name.localeCompare(b.player.name);
+        });
+
+        const activeItems = [...activeSwaps, ...activeDirect, ...activeRegular];
+
+        // 2. Build Bench List
+        // Order: Swaps (outgoing in identical row order) -> Direct Removes -> Regular Bench Players (playtime asc)
+        const benchSwaps = [];
+        const benchDirect = [];
+        const benchRegular = [];
+
+        stagedSwaps.forEach((swap, idx) => {
+          const outPlayer = state.players.find(p => p.id === swap.outId);
+          const inPlayer = state.players.find(p => p.id === swap.inId);
+          if (outPlayer && inPlayer) {
+            benchSwaps.push({
+              player: outPlayer,
+              stagedType: 'swap-out',
+              swapIndex: idx + 1,
+              partner: inPlayer
+            });
+          }
+        });
+
+        stagedMoves.filter(m => m.targetCol === 'bench').forEach(m => {
+          const p = state.players.find(p => p.id === m.playerId);
+          if (p) {
+            benchDirect.push({
+              player: p,
+              stagedType: 'direct-out'
+            });
+          }
+        });
+
+        const stagedInSet = new Set(stagedSwaps.map(s => s.inId));
+        state.players.forEach(p => {
+          if (p.status === 'bench' && !stagedInSet.has(p.id) && !stagedMoveSet.has(p.id)) {
+            benchRegular.push({
+              player: p,
+              stagedType: 'none'
+            });
+          }
+        });
+        benchRegular.sort((a, b) => {
+          const timeA = getPlayerTotalSeconds(a.player);
+          const timeB = getPlayerTotalSeconds(b.player);
+          if (timeA !== timeB) return timeA - timeB;
+          return a.player.name.localeCompare(b.player.name);
+        });
+
+        const benchItems = [...benchSwaps, ...benchDirect, ...benchRegular];
+
+        activeCountBadge.textContent = activeItems.length;
+        benchCountBadge.textContent = benchItems.length;
+
+        renderColumn(activeList, activeItems, 'active');
+        renderColumn(benchList, benchItems, 'bench');
+
+        // Pending Bar
+        if (hasPendingChanges()) {
+          const sCount = stagedSwaps.length;
+          const mCount = stagedMoves.length;
+          let text = '';
+          if (sCount > 0 && mCount > 0) {
+            text = `${sCount} ${sCount === 1 ? 'Swap' : 'Swaps'}, ${mCount} ${mCount === 1 ? 'Move' : 'Moves'} Staged`;
+          } else if (sCount > 0) {
+            text = `${sCount} ${sCount === 1 ? 'Swap' : 'Swaps'} Staged (${sCount * 2} Players)`;
+          } else {
+            text = `${mCount} ${mCount === 1 ? 'Move' : 'Moves'} Staged`;
+          }
+          pendingCountText.textContent = text;
+          pendingBar.classList.add('active');
+        } else {
+          pendingBar.classList.remove('active');
+        }
+      }
+
+      function renderColumn(listElement, items, columnType) {
+        listElement.innerHTML = '';
+
+        if (items.length === 0) {
+          const emptyMsg = document.createElement('div');
+          emptyMsg.style.cssText = 'text-align:center; padding: 28px 8px; color: var(--text-muted); font-size: 0.8rem;';
+          emptyMsg.textContent = columnType === 'active' ? 'No players on field' : 'No players on bench';
+          listElement.appendChild(emptyMsg);
+          return;
+        }
+
+        let dividerInserted = false;
+        const hasStagedItems = items.some(it => it.stagedType !== 'none');
+
+        items.forEach(item => {
+          const player = item.player;
+          const stagedType = item.stagedType;
+          const isPending = (stagedType !== 'none');
+          const isSelected = (selectedPlayerIdForSwap === player.id);
+          const isPhysicallyActive = (player.status === 'active' && state.isRunning);
+
+          if (hasStagedItems && !isPending && !dividerInserted) {
+            dividerInserted = true;
+            const divider = document.createElement('div');
+            divider.className = 'section-divider';
+            divider.textContent = columnType === 'active' ? 'Current Lineup (Most Played)' : 'Benched (Least Played)';
+            listElement.appendChild(divider);
+          }
+
+          const card = document.createElement('div');
+          card.className = `player-card ${isPending ? 'pending-state' : ''} ${isSelected ? 'selected-for-swap' : ''} ${isPhysicallyActive ? 'is-active-running' : ''}`;
+          card.dataset.playerId = player.id;
+          card.dataset.currentCol = columnType;
+
+          let subTagHtml = '';
+          if (stagedType === 'swap-in') {
+            subTagHtml = `<span class="pending-tag">⇄ ${item.partner.number} ${escapeHtml(item.partner.name)}</span>`;
+          } else if (stagedType === 'swap-out') {
+            subTagHtml = `<span class="pending-tag">⇄ ${item.partner.number} ${escapeHtml(item.partner.name)}</span>`;
+          } else if (stagedType === 'direct-in') {
+            subTagHtml = `<span class="pending-tag direct-tag">+ Direct In</span>`;
+          } else if (stagedType === 'direct-out') {
+            subTagHtml = `<span class="pending-tag direct-tag">− Direct Out</span>`;
+          }
+
+          const unstageBtnHtml = isPending
+            ? `<button class="btn-unstage" data-unstage-id="${player.id}" title="Cancel this move" aria-label="Cancel">✕</button>`
+            : '';
+
+          card.innerHTML = `
+            <div class="card-info">
+              <div class="jersey-badge">${player.number}</div>
+              <div class="player-names-wrap">
+                <span class="player-name">${escapeHtml(player.name)}</span>
+                ${subTagHtml}
+              </div>
+            </div>
+            <div class="card-stats">
+              <div class="playtime-pill">${formatTime(getPlayerTotalSeconds(player))}</div>
+            </div>
+            ${unstageBtnHtml}
+          `;
+
+          attachDragEvents(card, player);
+          listElement.appendChild(card);
+        });
+      }
+
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      // --- TOUCH / POINTER DRAG AND DROP ---
+      function attachDragEvents(card, player) {
+        card.addEventListener('pointerdown', (e) => {
+          if (e.target.closest('.btn-unstage') || e.target.closest('.btn-delete-player')) return;
+
+          const startX = e.clientX;
+          const startY = e.clientY;
+          let isDragging = false;
+
+          const pointerMoveHandler = (moveEvent) => {
+            const dx = moveEvent.clientX - startX;
+            const dy = moveEvent.clientY - startY;
+
+            if (!isDragging && (Math.abs(dx) > 7 || Math.abs(dy) > 7)) {
+              isDragging = true;
+              card.setPointerCapture(e.pointerId);
+
+              // Setup ghost
+              dragGhost.innerHTML = card.innerHTML;
+              dragGhost.className = card.className + ' dragging';
+              dragGhost.style.width = `${card.offsetWidth}px`;
+              dragGhost.style.display = 'flex';
+              card.style.opacity = '0.3';
+              card.style.pointerEvents = 'none'; // so elementFromPoint sees target underneath
+            }
+
+            if (isDragging) {
+              dragGhost.style.left = `${moveEvent.clientX}px`;
+              dragGhost.style.top = `${moveEvent.clientY}px`;
+
+              clearDropHighlights();
+              const elemUnder = document.elementFromPoint(moveEvent.clientX, moveEvent.clientY);
+              if (elemUnder) {
+                const targetCard = elemUnder.closest('.player-card');
+                const targetZone = elemUnder.closest('.drop-zone');
+                if (targetCard && targetCard.dataset.playerId !== player.id) {
+                  targetCard.classList.add('drop-target-hover');
+                } else if (targetZone) {
+                  targetZone.classList.add('drop-target-hover');
+                }
+              }
+            }
+          };
+
+          const pointerUpHandler = (upEvent) => {
+            card.removeEventListener('pointermove', pointerMoveHandler);
+            card.removeEventListener('pointerup', pointerUpHandler);
+            card.removeEventListener('pointercancel', pointerUpHandler);
+
+            if (isDragging) {
+              card.style.opacity = '1';
+              card.style.pointerEvents = '';
+              dragGhost.style.display = 'none';
+              clearDropHighlights();
+
+              const elemUnder = document.elementFromPoint(upEvent.clientX, upEvent.clientY);
+              if (elemUnder) {
+                const targetCard = elemUnder.closest('.player-card');
+                const targetZone = elemUnder.closest('.drop-zone');
+
+                if (targetCard && targetCard.dataset.playerId !== player.id) {
+                  stageSwap(player.id, targetCard.dataset.playerId);
+                } else if (targetZone && targetZone.dataset.column) {
+                  stageMove(player.id, targetZone.dataset.column);
+                }
+              }
+            } else {
+              // It was a TAP: handle tap-to-swap / tap-to-move
+              handleCardTap(player.id);
+            }
+          };
+
+          card.addEventListener('pointermove', pointerMoveHandler);
+          card.addEventListener('pointerup', pointerUpHandler);
+          card.addEventListener('pointercancel', pointerUpHandler);
+        });
+      }
+
+      function clearDropHighlights() {
+        document.querySelectorAll('.drop-target-hover').forEach(el => el.classList.remove('drop-target-hover'));
+      }
+
+      // --- TAP-TO-SWAP / TAP-TO-MOVE ---
+      function handleCardTap(playerId) {
+        if (!selectedPlayerIdForSwap) {
+          selectedPlayerIdForSwap = playerId;
+          const player = state.players.find(p => p.id === playerId);
+          showToast(`Selected ${player.number} ${player.name}. Tap target to swap or move.`);
+          renderAll();
+        } else if (selectedPlayerIdForSwap === playerId) {
+          selectedPlayerIdForSwap = null;
+          renderAll();
+        } else {
+          stageSwap(selectedPlayerIdForSwap, playerId);
+        }
+      }
+
+      function handleDropzoneTap(column) {
+        if (selectedPlayerIdForSwap) {
+          stageMove(selectedPlayerIdForSwap, column);
+        }
+      }
+
+      // --- ROSTER MANAGEMENT ---
+      function renderRosterModalList() {
+        modalRosterList.innerHTML = '';
+        modalRosterCount.textContent = state.players.length;
+
+        // Sort alphabetically by name for clean roster overview
+        const sorted = [...state.players].sort((a, b) => a.name.localeCompare(b.name));
+
+        sorted.forEach(player => {
+          const row = document.createElement('div');
+          row.className = 'roster-list-row';
+          row.innerHTML = `
+            <div class="roster-row-info">
+              <div class="jersey-badge">${player.number}</div>
+              <div style="font-weight:700; color:#fff;">${escapeHtml(player.name)}</div>
+              <div style="font-size:0.7rem; color:var(--text-muted);">(${player.status === 'active' ? 'On Field' : 'Bench'})</div>
+            </div>
+            <button class="btn-cancel" data-del-player="${player.id}" style="height:32px; padding:0 10px; color:var(--danger); border-color:rgba(239,68,68,0.3);">
+              Delete
+            </button>
+          `;
+          modalRosterList.appendChild(row);
+        });
+      }
+
+      function addPlayerToRoster(name, number) {
+        const cleanName = name.trim();
+        const numVal = parseInt(number, 10);
+
+        if (!cleanName) {
+          alert('Please enter a player name.');
+          return;
+        }
+
+        const newId = 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+        const newPlayer = {
+          id: newId,
+          name: cleanName,
+          number: isNaN(numVal) ? (state.players.length + 1) : numVal,
+          status: 'bench',
+          intervals: [],
+          activeSince: null
+        };
+
+        state.players.push(newPlayer);
+        saveState();
+        renderAll();
+        renderRosterModalList();
+        showToast(`Added ${newPlayer.number} ${newPlayer.name} to Bench`);
+
+        inputPlayerName.value = '';
+        inputPlayerNumber.value = '';
+        inputPlayerName.focus();
+      }
+
+      function removePlayerFromRoster(playerId) {
+        const player = state.players.find(p => p.id === playerId);
+        if (!player) return;
+
+        if (confirm(`Remove ${player.number} ${player.name} from the roster?`)) {
+          state.players = state.players.filter(p => p.id !== playerId);
+          stagedSwaps = stagedSwaps.filter(s => s.outId !== playerId && s.inId !== playerId);
+          stagedMoves = stagedMoves.filter(m => m.playerId !== playerId);
+          if (selectedPlayerIdForSwap === playerId) selectedPlayerIdForSwap = null;
+          saveState();
+          renderAll();
+          renderRosterModalList();
+          showToast(`Removed ${player.number} ${player.name}`);
+        }
+      }
+
+      // --- TOAST NOTIFICATION ---
+      let toastTimer = null;
+      function showToast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toastEl.classList.remove('show');
+        }, 2200);
+      }
+
+      // --- EVENT LISTENERS ---
+      function setupEventListeners() {
+        btnToggleMatch.addEventListener('click', toggleMatchRunning);
+
+        btnApplyPending.addEventListener('click', applyPendingSubstitutions);
+        btnCancelPending.addEventListener('click', cancelPendingSubstitutions);
+
+        // Blank Drop Zone Click (tap-to-move)
+        dropzoneActive.addEventListener('click', () => handleDropzoneTap('active'));
+        dropzoneBench.addEventListener('click', () => handleDropzoneTap('bench'));
+
+        // Reset Match Modal
+        btnResetMatch.addEventListener('click', () => {
+          if (state.isRunning) {
+            showToast('Pause match first before resetting.');
+            return;
+          }
+          modalReset.classList.add('active');
+        });
+        btnCancelReset.addEventListener('click', () => modalReset.classList.remove('active'));
+        btnConfirmReset.addEventListener('click', () => {
+          modalReset.classList.remove('active');
+          resetMatch();
+        });
+
+        // Edit Roster Modal
+        btnEditRoster.addEventListener('click', () => {
+          if (state.isRunning) {
+            showToast('Pause match first before editing roster.');
+            return;
+          }
+          renderRosterModalList();
+          modalRoster.classList.add('active');
+        });
+
+        const closeRosterModal = () => {
+          modalRoster.classList.remove('active');
+        };
+
+        btnCloseRoster.addEventListener('click', closeRosterModal);
+        btnFinishRoster.addEventListener('click', closeRosterModal);
+
+        btnAddPlayer.addEventListener('click', () => {
+          addPlayerToRoster(inputPlayerName.value, inputPlayerNumber.value);
+        });
+
+        inputPlayerName.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            addPlayerToRoster(inputPlayerName.value, inputPlayerNumber.value);
+          }
+        });
+
+        // Delete player click delegation in roster modal list
+        modalRosterList.addEventListener('click', (e) => {
+          const delBtn = e.target.closest('[data-del-player]');
+          if (delBtn) {
+            removePlayerFromRoster(delBtn.dataset.delPlayer);
+          }
+        });
+
+        // Unstage button click delegation on pending cards
+        document.addEventListener('click', (e) => {
+          const unstageBtn = e.target.closest('[data-unstage-id]');
+          if (unstageBtn) {
+            e.stopPropagation();
+            unstagePlayer(unstageBtn.dataset.unstageId);
+          }
+        });
+
+        // Dismiss selected card on outside click
+        document.addEventListener('pointerdown', (e) => {
+          if (selectedPlayerIdForSwap) {
+            if (!e.target.closest('.player-card') && !e.target.closest('.drop-zone') && !e.target.closest('.pending-bar')) {
+              selectedPlayerIdForSwap = null;
+              renderAll();
+            }
+          }
+        });
+      }
+
+      // Boot
+      init();
+    })();
+  </script>
+</body>
+</html>
