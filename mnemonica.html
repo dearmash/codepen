@@ -1,0 +1,281 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mnemonica</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<body class="bg-gradient-to-br from-black to-red-950 h-screen flex justify-center items-center">
+  <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md transition-transfor">
+    <h1 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Mnemonica</h1>
+    <select id="mode-select" class="w-full rounded-md border border-gray-300 focus:ring focus:ring-blue-200 focus:outline-none py-2 px-3 mb-6">
+      <option value="card-to-number">Card ⇒ Number</option>
+      <option value="card-from-number">Card ⇐ Number</option>
+      <option value="card-both-number">Card ⇔ Number</option>
+      <option value="card-to-card">Card ⇒ Card</option>
+      <option value="card-from-card">Card ⇐ Card</option>
+      <option value="card-both-card">Card ⇔ Card</option>
+      <option value="acaan">ACAAN</option>
+    </select>
+    <div class="mb-8 hidden" id="minmax-slider-box">
+        <div class="flex justify-between items-center mb-2">
+            <label for="min-position" class="text-sm font-medium text-gray-700"><span id="min-position-value">1</span></label>
+            <label for="max-position" class="text-sm font-medium text-gray-700"><span id="max-position-value">52</span></label>
+        </div>
+        <div class="flex flex-col gap-4 slider-container">
+            <input type="range" id="position-1" min="1" max="52" value="1">
+            <input type="range" id="position-2" min="1" max="52" value="52">
+        </div>
+    </div>
+    <div class="card-display mb-4 flex justify-center gap-4">
+      <button id="show-left-button" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md transition-colors duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 w-24 h-24 px-0 py-0 text-xl flex items-center justify-center">
+        Show
+      </button>
+      <select id="left-dropdown" class="w-24 h-24 px-0 py-0 rounded-md border border-gray-300 focus:ring focus:ring-blue-200 focus:outline-none text-center text-xl">
+      </select>
+      <select id="right-dropdown" class="w-24 h-24 px-0 py-0 rounded-md border border-gray-300 focus:ring focus:ring-blue-200 focus:outline-none text-center text-xl">
+      </select>
+      <div id="right-label" class="bg-white text-black border border-gray-300 font-semibold rounded-md w-24 h-24 px-0 py-0 text-xl flex items-center justify-center text-center">10 ♥️</div>
+      <button id="show-right-button" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md transition-colors duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 w-24 h-24 px-0 py-0 text-xl flex items-center justify-center">
+        Show
+      </button>
+    </div>
+    <div id="message-label" class="text-center mb-4 text-md text-gray-300 flex flex-col">(3 ♣️) 4 < 14, cut 10 from the bottom @42</div>
+    <div class="controls flex flex-col items-center gap-3">
+      <button id="next-button" class="bg-green-500 hover:bg-green-600 text-white text-xl font-semibold rounded-md w-24 h-24 px-0 py-0 transition-colors duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
+        Next
+      </button>
+    </div>
+  </div>
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+  const mnemonicaStack = [
+    "4 ♣️", "2 ♥️", "7 ♦️", "3 ♣️", "4 ♥️", "6 ♦️", "A ♠️", "5 ♥️", "9 ♠️", "2 ♠️", "Q ♥️", "3 ♦️", "Q ♣️", 
+    "8 ♥️", "6 ♠️", "5 ♠️", "9 ♥️", "K ♣️", "2 ♦️", "J ♥️", "3 ♠️", "8 ♠️", "6 ♥️", "10 ♣️", "5 ♦️", "K ♦️", 
+    "2 ♣️", "3 ♥️", "8 ♦️", "5 ♣️", "K ♠️", "J ♦️", "8 ♣️", "10 ♠️", "K ♥️", "J ♣️", "7 ♠️", "10 ♥️", "A ♦️", 
+    "4 ♠️", "7 ♥️", "4 ♦️", "A ♣️", "9 ♣️", "J ♠️", "Q ♦️", "7 ♣️", "Q ♠️", "10 ♦️", "6 ♣️", "A ♥️", "9 ♦️", 
+  ];
+
+  const newDeckOrder = [
+    "A ♣️", "2 ♣️", "3 ♣️", "4 ♣️", "5 ♣️", "6 ♣️", "7 ♣️", "8 ♣️", "9 ♣️", "10 ♣️", "J ♣️", "Q ♣️", "K ♣️", 
+    "A ♥️", "2 ♥️", "3 ♥️", "4 ♥️", "5 ♥️", "6 ♥️", "7 ♥️", "8 ♥️", "9 ♥️", "10 ♥️", "J ♥️", "Q ♥️", "K ♥️", 
+    "A ♠️", "2 ♠️", "3 ♠️", "4 ♠️", "5 ♠️", "6 ♠️", "7 ♠️", "8 ♠️", "9 ♠️", "10 ♠️", "J ♠️", "Q ♠️", "K ♠️", 
+    "A ♦️", "2 ♦️", "3 ♦️", "4 ♦️", "5 ♦️", "6 ♦️", "7 ♦️", "8 ♦️", "9 ♦️", "10 ♦️", "J ♦️", "Q ♦️", "K ♦️"
+  ];
+
+  const mnemonicaOrder = [
+    43, 27, 4, 1, 30, 50, 47, 33, 44, 24, 36, 13, 18, 
+    51, 2, 28, 5, 8, 23, 41, 14, 17, 38, 20, 11, 35, 
+    7, 10, 21, 40, 16, 15, 37, 22, 9, 34, 45, 48, 31, 
+    39, 19, 12, 42, 25, 6, 3, 29, 52, 49, 32, 46, 26, 
+  ];
+
+  let currentCardIndex = 0;
+  let currentPositionIndex = 0;
+  const leftSelect = document.getElementById("left-dropdown");
+  const rightSelect = document.getElementById("right-dropdown");
+  const showLeftButton = document.getElementById("show-left-button");
+  const showRightButton = document.getElementById("show-right-button");
+  const rightLabel = document.getElementById("right-label");
+  const messageLabel = document.getElementById("message-label");
+  const nextButton = document.getElementById("next-button");
+  const modeSelect = document.getElementById("mode-select");
+  const minmaxSliderBox = document.getElementById("minmax-slider-box");
+  const position1Input = document.getElementById("position-1");
+  const position2Input = document.getElementById("position-2");
+  const minPositionValueLabel = document.getElementById("min-position-value");
+  const maxPositionValueLabel = document.getElementById("max-position-value");
+
+  function fillNewDeckOrder(thisSelect) {
+    thisSelect.innerHTML = "";
+    newDeckOrder.forEach((card, index) => {
+      const option = document.createElement("option");
+      option.value = mnemonicaOrder[index] - 1;
+      option.textContent = card;
+      thisSelect.appendChild(option);
+    });
+  }
+
+  function fillMnemonicaOrder(thisSelect, offset = 0) {
+    thisSelect.innerHTML = "";
+    mnemonicaStack.forEach((card, index) => {
+      const option = document.createElement("option");
+      option.value = (index + offset) % mnemonicaStack.length;
+      option.textContent = card;
+      thisSelect.appendChild(option);
+    });
+  }
+
+  function fillPositions(thisSelect) {
+    thisSelect.innerHTML = "";
+    for (let i = 0; i <= 51; i++) {
+      const option = document.createElement("option");
+      option.value = i;
+      option.textContent = i + 1;
+      thisSelect.appendChild(option);
+    }
+  }
+
+  function populateCardDropdown() {
+    switch (modeSelect.value) {
+      case "card-to-number":
+      case "card-from-number":
+      case "card-both-number":
+      case "acaan":
+        fillNewDeckOrder(leftSelect);
+        fillPositions(rightSelect);
+        break;
+      case "card-to-card":
+      case "card-from-card":
+      case "card-both-card":
+        fillMnemonicaOrder(leftSelect, 0);
+        fillMnemonicaOrder(rightSelect, 51);
+        break;
+    }
+  }
+  
+  function showLeft() {
+    showLeftButton.style.display = rightSelect.style.display = "inline-block";
+    showRightButton.style.display = leftSelect.style.display = rightLabel.style.display = messageLabel.style.display = "none";
+  }
+
+  function showRight() {
+    showRightButton.style.display = leftSelect.style.display = "inline-block";
+    showLeftButton.style.display = rightSelect.style.display = rightLabel.style.display = messageLabel.style.display = "none";
+  }
+  
+  function showAcaan() {
+    showRightButton.style.display = leftSelect.style.display = rightSelect.style.display = "inline-block";
+    showLeftButton.style.display = rightLabel.style.display = messageLabel.style.display = "none";
+    calculateAcann();
+  }
+
+  function calculateAcann() {
+    const targetCard = leftSelect.options[leftSelect.selectedIndex].text
+    const targetCardPosition = parseInt(leftSelect.value)+1
+    const targetPosition = parseInt(rightSelect.value)+1
+    
+    // console.log(leftSelect.value)
+    // console.log(rightSelect.value)
+    // console.log("The " + targetCard + " is at position " + targetCardPosition + " but we want it to be at " + targetPosition + ".");
+
+    if(targetCardPosition < targetPosition){
+      cutDelta = targetPosition - targetCardPosition
+      cutPosition = 52 - cutDelta;
+      cutCard = mnemonicaStack[cutPosition-1]
+      // console.log("We need to add "+cutDelta+" cards to the top");
+      // console.log("Cut at card number " + cutPosition + " the " + cutCard);
+      // rightLabel.innerHTML = "<br/>" + cutCard + "<br/>(" + cutPosition + ")"
+      rightLabel.innerHTML = cutCard
+      messageLabel.innerHTML = targetCardPosition+" < "+targetPosition+", cut "+cutDelta+" from the bottom @"+cutPosition
+    } else if(targetCardPosition > targetPosition) {
+      cutPosition = targetCardPosition - targetPosition;
+      cutCard = mnemonicaStack[cutPosition-1]
+      // console.log("We need to remove "+cutPosition+" cards from the top");
+      // console.log(targetCardPosition+" - "+targetPosition+" = "+cutPosition);
+      // console.log("Cut at card number " + cutPosition + " the " + cutCard);
+      rightLabel.innerHTML = cutCard
+      messageLabel.innerHTML = targetCardPosition+" > "+targetPosition+", cut "+cutPosition+" from the top"
+    } else {
+      rightLabel.innerHTML = mnemonicaStack[51]
+      messageLabel.innerHTML = "Do nothing, already at position"
+    }
+  }
+  
+  function displayCurrentCard() {
+    leftSelect.value = rightSelect.value = currentCardIndex;
+    switch (modeSelect.value) {
+      case "card-to-number":
+      case "card-to-card":
+        showRight();
+        break;
+      case "card-from-number":
+      case "card-from-card":
+        showLeft();
+        break;
+      case "card-both-number":
+      case "card-both-card":
+        if (Math.random() < 0.5) showLeft();
+        else showRight();
+        break;
+      case "acaan":
+        rightSelect.value = currentPositionIndex;
+        showAcaan();
+    }
+  }
+
+  function showClicked() {
+    showLeftButton.style.display = "none";
+    showRightButton.style.display = "none";
+    rightSelect.style.display = "inline-block";
+    leftSelect.style.display = "inline-block";
+    if(modeSelect.value === 'acaan')
+      rightLabel.style.display = "flex";
+  }
+
+  function reset() {
+    let tmpIndex;
+    do {
+      tmpIndex = Math.floor(Math.random() * mnemonicaStack.length);
+    } while (currentCardIndex === tmpIndex);
+    currentCardIndex = tmpIndex;
+    do {
+      tmpIndex = Math.floor(Math.random() * mnemonicaStack.length);
+    } while (currentPositionIndex === tmpIndex);
+    currentPositionIndex = tmpIndex;
+    displayCurrentCard();
+  }
+
+  function setMode() {
+    localStorage.setItem("mode", modeSelect.value);
+    populateCardDropdown();
+    reset();
+  }
+
+  leftSelect.addEventListener("change", () => {
+    if (modeSelect.value == "acaan") {
+      calculateAcann();
+      return;
+    }
+    const selectedValue = parseInt(leftSelect.value);
+    rightSelect.value = selectedValue;
+  });
+  rightSelect.addEventListener("change", () => {
+    if (modeSelect.value == "acaan") {
+      calculateAcann();
+      return;
+    }
+    const selectedValue = parseInt(rightSelect.value);
+    leftSelect.value = selectedValue;
+  });
+  
+  function updateRange() {
+    const position1 = parseInt(position1Input.value);
+    const position2 = parseInt(position2Input.value);
+    const minVal = Math.min(position1, position2);
+    const maxVal = Math.max(position1, position2);
+    minPositionValueLabel.textContent = minVal;
+    maxPositionValueLabel.textContent = maxVal;
+  }
+  
+  position1Input.addEventListener("input", updateRange);
+  position2Input.addEventListener("input", updateRange);
+
+  modeSelect.addEventListener("change", setMode);
+
+  showLeftButton.addEventListener("click", showClicked);
+  showRightButton.addEventListener("click", showClicked);
+  nextButton.addEventListener("click", reset);
+  rightLabel.addEventListener("click", () => {
+    messageLabel.style.display = 'flex';
+  });
+
+  let storedMode = localStorage.getItem("mode");
+  if(Array.from(modeSelect.options).some(o=>o.value==storedMode)) {
+    modeSelect.value = storedMode
+  }
+
+  setMode();
+});
+  </script>
+</body>
