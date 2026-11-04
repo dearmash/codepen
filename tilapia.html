@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tilapia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for a clean look */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light gray background */
+        }
+        /* Card styling */
+        .card {
+            width: 150px;
+            height: 220px;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px; /* Rounded corners */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        /* Button styling */
+        .btn {
+            padding: 12px 24px;
+            background-color: #3b82f6; /* Blue */
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .btn:hover {
+            background-color: #2563eb; /* Darker blue on hover */
+            transform: translateY(-1px);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+    <div class="text-center bg-white p-8 rounded-xl shadow-lg max-w-lg w-full">
+        <h1 class="text-5xl font-extrabold text-gray-900 mb-6">Tilapia</h1>
+
+        <div class="flex flex-col md:flex-row items-center justify-center md:space-x-8 mb-8">
+            <div class="flex flex-col items-center mb-8 md:mb-0">
+                <p class="text-lg text-gray-700 mb-4">Peek:</p>
+                <div id="cardDisplay" class="card text-red-600">
+                    ?
+                </div>
+            </div>
+
+            <div id="spectatorOneCardDetails" class="text-lg text-gray-800 space-y-2 hidden text-left md:w-1/2">
+                </div>
+        </div>
+
+        <div id="spectatorCardsActual" class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8 mb-8 hidden">
+            <div class="flex flex-col items-center">
+                <p class="text-lg text-gray-700 mb-2">Spectator One:</p>
+                <div id="spectatorOneActualCardDisplay" class="card text-red-600"></div>
+            </div>
+            <div class="flex flex-col items-center">
+                <p class="text-lg text-gray-700 mb-2">Spectator Two:</p>
+                <div id="spectatorTwoActualCardDisplay" class="card text-red-600"></div>
+            </div>
+        </div>
+
+        <button id="nextButton" class="btn mb-4">Next</button>
+        <button id="resetButton" class="btn">Reset</button>
+    </div>
+
+    <script>
+        // Define the Mnemonica stack (Juan Tamariz's order)
+        const mnemonicaDeck = [
+            "4♣", "2♥", "7♦", "3♣", "4♥", "6♦", "A♠", "5♥", "9♠", "2♠", "Q♥", "3♦", "Q♣", "8♥", "6♠", "5♠", "9♥", "K♣", "2♦", "J♥", "3♠", "8♠", "6♥", "10♣", "5♦", "K♦", "2♣", "3♥", "8♦", "5♣", "K♠", "J♦", "8♣", "10♠", "K♥", "J♣", "7♠", "10♥", "A♦", "4♠", "7♥", "4♦", "A♣", "9♣", "J♠", "Q♦", "7♣", "Q♠", "10♦", "6♣", "A♥", "9♦"
+        ];
+
+        const cardDisplay = document.getElementById('cardDisplay');
+        const nextButton = document.getElementById('nextButton');
+        const resetButton = document.getElementById('resetButton');
+        const spectatorOneCardDetails = document.getElementById('spectatorOneCardDetails');
+        const spectatorCardsActual = document.getElementById('spectatorCardsActual');
+        const spectatorOneActualCardDisplay = document.getElementById('spectatorOneActualCardDisplay');
+        const spectatorTwoActualCardDisplay = document.getElementById('spectatorTwoActualCardDisplay');
+
+
+        // Variables to store the cards and their categorization, accessible globally
+        let pickedCard = null;
+        let spectatorOneCard = null;
+        let categorizedSpectatorCard = null;
+        let spectatorTwoCard = null;
+
+        // Variables to store the random yes/no answers
+        let colorAnswer = null;
+        let suitShapeAnswer = null;
+        let valueCategoryAnswer = null;
+
+        // State variable to track if spectator one's details have been shown
+        let hasDetailsBeenShown = false;
+
+        /**
+         * Generates a random "Yes" or "No" answer.
+         * @returns {string} "Yes" or "No".
+         */
+        function getRandomYesNo() {
+            return Math.random() < 0.5 ? "Yes" : "No";
+        }
+
+        /**
+         * Returns the opposite characteristic value for a given type.
+         * @param {string} type - The type of characteristic ("color", "suitShape", "valueCategory").
+         * @param {string} value - The current value of the characteristic.
+         * @returns {string} The opposite characteristic value.
+         */
+        function getOppositeCharacteristic(type, value) {
+            if (type === 'color') {
+                return value === 'red' ? 'black' : 'red';
+            } else if (type === 'suitShape') {
+                return value === 'pointy' ? 'curved' : 'pointy';
+            } else if (type === 'valueCategory') {
+                return value === 'high' ? 'low' : 'high';
+            }
+            return value; // Should not happen with valid inputs
+        }
+
+        /**
+         * Categorizes a single card based on its color, suit shape, and value.
+         * @param {string} cardString - The string representation of the card (e.g., "A♠", "10♣").
+         * @returns {object} An object with categorized properties.
+         */
+        function categorizeCard(cardString) {
+            const suit = cardString.slice(-1); // Last character is the suit
+            const rank = cardString.slice(0, -1); // Everything before the suit is the rank
+
+            let color;
+            let suitShape;
+            let valueCategory;
+
+            // Determine color
+            if (suit === '♥' || suit === '♦') {
+                color = "red";
+            } else {
+                color = "black";
+            }
+
+            // Determine suit shape
+            if (suit === '♠' || suit === '♦') {
+                suitShape = "pointy";
+            } else { // ♣ or ♥
+                suitShape = "curved";
+            }
+
+            // Determine value category (high/low)
+            let numericRank;
+            switch (rank) {
+                case 'A':
+                    numericRank = 1; // Ace can be low for sorting, but high for category
+                    break;
+                case 'J':
+                    numericRank = 11;
+                    break;
+                case 'Q':
+                    numericRank = 12;
+                    break;
+                case 'K':
+                    numericRank = 13;
+                    break;
+                case 'T': // For Ten, if represented as 'T'
+                    numericRank = 10;
+                    break;
+                default:
+                    numericRank = parseInt(rank, 10);
+            }
+
+            // High cards are 8 or higher, plus A, J, Q, K, T
+            if (['A', 'J', 'Q', 'K', 'T'].includes(rank) || numericRank >= 8) {
+                valueCategory = "high";
+            } else { // 2, 3, 4, 5, 6, 7
+                valueCategory = "low";
+            }
+
+            return {
+                card: cardString,
+                color: color,
+                suitShape: suitShape,
+                valueCategory: valueCategory
+            };
+        }
+
+        /**
+         * Initializes the peeked card and determines the spectator card on page load or reset.
+         */
+        function initializeCardsAndDisplayPeeked() {
+            // Generate a random index for the peeked card
+            const randomIndex = Math.floor(Math.random() * mnemonicaDeck.length);
+            pickedCard = mnemonicaDeck[randomIndex];
+
+            // Determine the index for Spectator One's card, wrapping around if at the end of the deck
+            const spectatorOneCardIndex = (randomIndex + 1) % mnemonicaDeck.length;
+            spectatorOneCard = mnemonicaDeck[spectatorOneCardIndex];
+
+            // Categorize Spectator One's card for later display
+            categorizedSpectatorCard = categorizeCard(spectatorOneCard);
+
+            // Determine the color for the peeked card display based on its suit
+            const isRed = pickedCard.includes('♥') || pickedCard.includes('♦');
+            cardDisplay.classList.remove('text-red-600', 'text-gray-900'); // Clear previous color classes
+            cardDisplay.classList.add(isRed ? 'text-red-600' : 'text-gray-900'); // Apply new color
+
+            // Update the text content of the card display element
+            cardDisplay.textContent = pickedCard;
+
+            // Reset visibility and content for all spectator related elements
+            spectatorOneCardDetails.classList.add('hidden');
+            spectatorOneCardDetails.innerHTML = ''; // Clear any previous details
+
+            spectatorCardsActual.classList.add('hidden');
+            spectatorOneActualCardDisplay.textContent = '';
+            spectatorTwoActualCardDisplay.textContent = '';
+
+            nextButton.classList.remove('hidden'); // Ensure next button is visible
+            nextButton.disabled = false; // Ensure next button is enabled
+            nextButton.textContent = "Next"; // Reset its text
+
+            hasDetailsBeenShown = false; // Reset the state for the two-stage reveal
+        }
+
+        /**
+         * Handles the click event for the "Next" button, performing a two-stage reveal.
+         */
+        function handleNextButtonClick() {
+            if (!hasDetailsBeenShown) {
+                // First click: Show spectator one's card details
+                spectatorOneCardDetails.classList.remove('hidden');
+                spectatorOneCardDetails.innerHTML = '';
+
+                // Generate and store random Yes/No answers
+                colorAnswer = getRandomYesNo();
+                suitShapeAnswer = getRandomYesNo();
+                valueCategoryAnswer = getRandomYesNo();
+
+                // Display the categorization statements for Spectator One's card with Yes/No answers
+                const colorStatement = document.createElement('p');
+                colorStatement.textContent = `The card is ${categorizedSpectatorCard.color}. (${colorAnswer})`;
+                spectatorOneCardDetails.appendChild(colorStatement);
+
+                const suitShapeStatement = document.createElement('p');
+                suitShapeStatement.textContent = `The card is ${categorizedSpectatorCard.suitShape}. (${suitShapeAnswer})`;
+                spectatorOneCardDetails.appendChild(suitShapeStatement);
+
+                const valueCategoryStatement = document.createElement('p');
+                valueCategoryStatement.textContent = `The card is ${categorizedSpectatorCard.valueCategory}. (${valueCategoryAnswer})`;
+                spectatorOneCardDetails.appendChild(valueCategoryStatement);
+
+                // Determine target characteristics for Spectator Two's card based on Yes/No answers
+                const targetColor = colorAnswer === 'Yes' ? categorizedSpectatorCard.color : getOppositeCharacteristic('color', categorizedSpectatorCard.color);
+                const targetSuitShape = suitShapeAnswer === 'Yes' ? categorizedSpectatorCard.suitShape : getOppositeCharacteristic('suitShape', categorizedSpectatorCard.suitShape);
+                const targetValueCategory = valueCategoryAnswer === 'Yes' ? categorizedSpectatorCard.valueCategory : getOppositeCharacteristic('valueCategory', categorizedSpectatorCard.valueCategory);
+
+                // Find Spectator Two's card from positions 20 to 27 (array indices 19 to 26)
+                spectatorTwoCard = null; // Reset before finding
+                const startIdx = 19; // Position 20
+                const endIdx = 26;   // Position 27
+
+                for (let i = startIdx; i <= endIdx; i++) {
+                    const currentCardString = mnemonicaDeck[i];
+                    const currentCategorizedCard = categorizeCard(currentCardString);
+
+                    if (currentCategorizedCard.color === targetColor &&
+                        currentCategorizedCard.suitShape === targetSuitShape &&
+                        currentCategorizedCard.valueCategory === targetValueCategory) {
+                        spectatorTwoCard = currentCardString;
+                        break; // Found the unique card
+                    }
+                }
+
+                // Log Spectator Two's card to the console for now
+                console.log("Spectator One's card characteristics:", categorizedSpectatorCard);
+                console.log("Yes/No Answers:", { color: colorAnswer, suitShape: suitShapeAnswer, value: valueCategoryAnswer });
+                console.log("Target characteristics for Spectator Two:", { color: targetColor, suitShape: targetSuitShape, value: targetValueCategory });
+                console.log("Spectator Two's card:", spectatorTwoCard);
+
+                hasDetailsBeenShown = true; // Set flag to true for the next click
+                // Button text and enabled state remain "Next" and enabled
+            } else {
+                // Second click: Show actual spectator cards and hide the "Next" button
+                spectatorCardsActual.classList.remove('hidden');
+
+                // Set content and color for Spectator One's actual card
+                spectatorOneActualCardDisplay.textContent = spectatorOneCard;
+                const isSpectatorOneRed = spectatorOneCard.includes('♥') || spectatorOneCard.includes('♦');
+                spectatorOneActualCardDisplay.classList.remove('text-red-600', 'text-gray-900');
+                spectatorOneActualCardDisplay.classList.add(isSpectatorOneRed ? 'text-red-600' : 'text-gray-900');
+
+                // Set content and color for Spectator Two's actual card
+                spectatorTwoActualCardDisplay.textContent = spectatorTwoCard;
+                const isSpectatorTwoRed = spectatorTwoCard.includes('♥') || spectatorTwoCard.includes('♦');
+                spectatorTwoActualCardDisplay.classList.remove('text-red-600', 'text-gray-900');
+                spectatorTwoActualCardDisplay.classList.add(isSpectatorTwoRed ? 'text-red-600' : 'text-gray-900');
+
+                nextButton.classList.add('hidden'); // Hide the next button
+            }
+        }
+
+        /**
+         * Resets the page to its initial state, picking a new card.
+         */
+        function resetPage() {
+            initializeCardsAndDisplayPeeked(); // Pick a new card and hide all details
+        }
+
+        // Add event listeners
+        nextButton.addEventListener('click', handleNextButtonClick);
+        resetButton.addEventListener('click', resetPage);
+
+        // Initialize the cards and display the peeked card when the page loads
+        window.onload = initializeCardsAndDisplayPeeked;
+    </script>
+</body>
+</html>
